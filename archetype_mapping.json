@@ -1,0 +1,1252 @@
+{
+  "total_leads": 5213,
+  "total_archetypes": 24,
+  "total_unique_google_categories": 163,
+  "archetypes": [
+    {
+      "archetype_id": "roofing_contractor",
+      "display_name": "Impermeabilización",
+      "bnai_score": 620,
+      "metrics": {
+        "margin_M": 8,
+        "pain_S": 8,
+        "decision_D": 9,
+        "viral_V": 4,
+        "web_urgency_W": 4,
+        "budget_F": 5
+      },
+      "total_leads_in_database": 10,
+      "percentage_of_database": 0.19,
+      "absorbed_google_categories_count": 5,
+      "absorbed_google_categories": [
+        {
+          "google_type": "building_materials_store",
+          "count": 3,
+          "percentage": 30.0
+        },
+        {
+          "google_type": "general_contractor",
+          "count": 3,
+          "percentage": 30.0
+        },
+        {
+          "google_type": "home_goods_store",
+          "count": 2,
+          "percentage": 20.0
+        },
+        {
+          "google_type": "hardware_store",
+          "count": 1,
+          "percentage": 10.0
+        },
+        {
+          "google_type": "manufacturer",
+          "count": 1,
+          "percentage": 10.0
+        }
+      ]
+    },
+    {
+      "archetype_id": "plumber",
+      "display_name": "Plomeros",
+      "bnai_score": 582,
+      "metrics": {
+        "margin_M": 6,
+        "pain_S": 10,
+        "decision_D": 9,
+        "viral_V": 6,
+        "web_urgency_W": 3,
+        "budget_F": 6
+      },
+      "total_leads_in_database": 0,
+      "percentage_of_database": 0.0,
+      "absorbed_google_categories_count": 0,
+      "absorbed_google_categories": []
+    },
+    {
+      "archetype_id": "lawyer",
+      "display_name": "Abogados",
+      "bnai_score": 534,
+      "metrics": {
+        "margin_M": 9,
+        "pain_S": 8,
+        "decision_D": 6,
+        "viral_V": 6,
+        "web_urgency_W": 8,
+        "budget_F": 6
+      },
+      "total_leads_in_database": 67,
+      "percentage_of_database": 1.29,
+      "absorbed_google_categories_count": 7,
+      "absorbed_google_categories": [
+        {
+          "google_type": "consultant",
+          "count": 35,
+          "percentage": 52.2
+        },
+        {
+          "google_type": "lawyer",
+          "count": 23,
+          "percentage": 34.3
+        },
+        {
+          "google_type": "association_or_organization",
+          "count": 3,
+          "percentage": 4.5
+        },
+        {
+          "google_type": "government_office",
+          "count": 3,
+          "percentage": 4.5
+        },
+        {
+          "google_type": "local_government_office",
+          "count": 1,
+          "percentage": 1.5
+        },
+        {
+          "google_type": "corporate_office",
+          "count": 1,
+          "percentage": 1.5
+        },
+        {
+          "google_type": "business_center",
+          "count": 1,
+          "percentage": 1.5
+        }
+      ]
+    },
+    {
+      "archetype_id": "electrician",
+      "display_name": "Electricistas",
+      "bnai_score": 528,
+      "metrics": {
+        "margin_M": 6,
+        "pain_S": 9,
+        "decision_D": 9,
+        "viral_V": 6,
+        "web_urgency_W": 3,
+        "budget_F": 6
+      },
+      "total_leads_in_database": 4,
+      "percentage_of_database": 0.08,
+      "absorbed_google_categories_count": 2,
+      "absorbed_google_categories": [
+        {
+          "google_type": "electrician",
+          "count": 3,
+          "percentage": 75.0
+        },
+        {
+          "google_type": "telecommunications_service_provider",
+          "count": 1,
+          "percentage": 25.0
+        }
+      ]
+    },
+    {
+      "archetype_id": "car_repair",
+      "display_name": "Talleres Mecánicos",
+      "bnai_score": 515,
+      "metrics": {
+        "margin_M": 7,
+        "pain_S": 8,
+        "decision_D": 8,
+        "viral_V": 7,
+        "web_urgency_W": 5,
+        "budget_F": 6
+      },
+      "total_leads_in_database": 358,
+      "percentage_of_database": 6.87,
+      "absorbed_google_categories_count": 7,
+      "absorbed_google_categories": [
+        {
+          "google_type": "car_repair",
+          "count": 196,
+          "percentage": 54.7
+        },
+        {
+          "google_type": "auto_parts_store",
+          "count": 109,
+          "percentage": 30.4
+        },
+        {
+          "google_type": "tire_shop",
+          "count": 38,
+          "percentage": 10.6
+        },
+        {
+          "google_type": "car_dealer",
+          "count": 11,
+          "percentage": 3.1
+        },
+        {
+          "google_type": "gas_station",
+          "count": 2,
+          "percentage": 0.6
+        },
+        {
+          "google_type": "wholesaler",
+          "count": 1,
+          "percentage": 0.3
+        },
+        {
+          "google_type": "car_wash",
+          "count": 1,
+          "percentage": 0.3
+        }
+      ]
+    },
+    {
+      "archetype_id": "locksmith",
+      "display_name": "Cerrajeros",
+      "bnai_score": 485,
+      "metrics": {
+        "margin_M": 5,
+        "pain_S": 10,
+        "decision_D": 9,
+        "viral_V": 5,
+        "web_urgency_W": 3,
+        "budget_F": 5
+      },
+      "total_leads_in_database": 33,
+      "percentage_of_database": 0.63,
+      "absorbed_google_categories_count": 2,
+      "absorbed_google_categories": [
+        {
+          "google_type": "service",
+          "count": 20,
+          "percentage": 60.6
+        },
+        {
+          "google_type": "locksmith",
+          "count": 13,
+          "percentage": 39.4
+        }
+      ]
+    },
+    {
+      "archetype_id": "dentist",
+      "display_name": "Dentistas / Clínicas",
+      "bnai_score": 485,
+      "metrics": {
+        "margin_M": 9,
+        "pain_S": 7,
+        "decision_D": 5,
+        "viral_V": 8,
+        "web_urgency_W": 9,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 290,
+      "percentage_of_database": 5.56,
+      "absorbed_google_categories_count": 2,
+      "absorbed_google_categories": [
+        {
+          "google_type": "dentist",
+          "count": 239,
+          "percentage": 82.4
+        },
+        {
+          "google_type": "dental_clinic",
+          "count": 51,
+          "percentage": 17.6
+        }
+      ]
+    },
+    {
+      "archetype_id": "physiotherapist",
+      "display_name": "Fisioterapeutas",
+      "bnai_score": 475,
+      "metrics": {
+        "margin_M": 7,
+        "pain_S": 7,
+        "decision_D": 7,
+        "viral_V": 6,
+        "web_urgency_W": 7,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 44,
+      "percentage_of_database": 0.84,
+      "absorbed_google_categories_count": 2,
+      "absorbed_google_categories": [
+        {
+          "google_type": "physiotherapist",
+          "count": 40,
+          "percentage": 90.9
+        },
+        {
+          "google_type": "chiropractor",
+          "count": 4,
+          "percentage": 9.1
+        }
+      ]
+    },
+    {
+      "archetype_id": "veterinary_care",
+      "display_name": "Veterinarios",
+      "bnai_score": 469,
+      "metrics": {
+        "margin_M": 7,
+        "pain_S": 8,
+        "decision_D": 6,
+        "viral_V": 7,
+        "web_urgency_W": 7,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 176,
+      "percentage_of_database": 3.38,
+      "absorbed_google_categories_count": 5,
+      "absorbed_google_categories": [
+        {
+          "google_type": "veterinary_care",
+          "count": 171,
+          "percentage": 97.2
+        },
+        {
+          "google_type": "pet_care",
+          "count": 2,
+          "percentage": 1.1
+        },
+        {
+          "google_type": "dog_cafe",
+          "count": 1,
+          "percentage": 0.6
+        },
+        {
+          "google_type": "pet_boarding_service",
+          "count": 1,
+          "percentage": 0.6
+        },
+        {
+          "google_type": "pet_store",
+          "count": 1,
+          "percentage": 0.6
+        }
+      ]
+    },
+    {
+      "archetype_id": "medical_clinic",
+      "display_name": "Clínicas Médicas",
+      "bnai_score": 448,
+      "metrics": {
+        "margin_M": 8,
+        "pain_S": 7,
+        "decision_D": 5,
+        "viral_V": 6,
+        "web_urgency_W": 9,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 391,
+      "percentage_of_database": 7.5,
+      "absorbed_google_categories_count": 9,
+      "absorbed_google_categories": [
+        {
+          "google_type": "medical_clinic",
+          "count": 295,
+          "percentage": 75.4
+        },
+        {
+          "google_type": "doctor",
+          "count": 23,
+          "percentage": 5.9
+        },
+        {
+          "google_type": "pharmacy",
+          "count": 22,
+          "percentage": 5.6
+        },
+        {
+          "google_type": "health",
+          "count": 13,
+          "percentage": 3.3
+        },
+        {
+          "google_type": "skin_care_clinic",
+          "count": 12,
+          "percentage": 3.1
+        },
+        {
+          "google_type": "medical_lab",
+          "count": 11,
+          "percentage": 2.8
+        },
+        {
+          "google_type": "hospital",
+          "count": 9,
+          "percentage": 2.3
+        },
+        {
+          "google_type": "medical_center",
+          "count": 5,
+          "percentage": 1.3
+        },
+        {
+          "google_type": "general_hospital",
+          "count": 1,
+          "percentage": 0.3
+        }
+      ]
+    },
+    {
+      "archetype_id": "real_estate_agency",
+      "display_name": "Bienes Raíces",
+      "bnai_score": 426,
+      "metrics": {
+        "margin_M": 10,
+        "pain_S": 6,
+        "decision_D": 4,
+        "viral_V": 6,
+        "web_urgency_W": 9,
+        "budget_F": 10
+      },
+      "total_leads_in_database": 107,
+      "percentage_of_database": 2.05,
+      "absorbed_google_categories_count": 8,
+      "absorbed_google_categories": [
+        {
+          "google_type": "real_estate_agency",
+          "count": 89,
+          "percentage": 83.2
+        },
+        {
+          "google_type": "shopping_mall",
+          "count": 8,
+          "percentage": 7.5
+        },
+        {
+          "google_type": "coworking_space",
+          "count": 3,
+          "percentage": 2.8
+        },
+        {
+          "google_type": "cultural_center",
+          "count": 2,
+          "percentage": 1.9
+        },
+        {
+          "google_type": "art_gallery",
+          "count": 2,
+          "percentage": 1.9
+        },
+        {
+          "google_type": "storage",
+          "count": 1,
+          "percentage": 0.9
+        },
+        {
+          "google_type": "apartment_complex",
+          "count": 1,
+          "percentage": 0.9
+        },
+        {
+          "google_type": "furniture_store",
+          "count": 1,
+          "percentage": 0.9
+        }
+      ]
+    },
+    {
+      "archetype_id": "spa",
+      "display_name": "Spas y Bienestar",
+      "bnai_score": 418,
+      "metrics": {
+        "margin_M": 7,
+        "pain_S": 6,
+        "decision_D": 6,
+        "viral_V": 6,
+        "web_urgency_W": 8,
+        "budget_F": 10
+      },
+      "total_leads_in_database": 105,
+      "percentage_of_database": 2.01,
+      "absorbed_google_categories_count": 5,
+      "absorbed_google_categories": [
+        {
+          "google_type": "spa",
+          "count": 94,
+          "percentage": 89.5
+        },
+        {
+          "google_type": "massage",
+          "count": 4,
+          "percentage": 3.8
+        },
+        {
+          "google_type": "massage_spa",
+          "count": 3,
+          "percentage": 2.9
+        },
+        {
+          "google_type": "wellness_center",
+          "count": 3,
+          "percentage": 2.9
+        },
+        {
+          "google_type": "sauna",
+          "count": 1,
+          "percentage": 1.0
+        }
+      ]
+    },
+    {
+      "archetype_id": "accounting",
+      "display_name": "Contadores",
+      "bnai_score": 412,
+      "metrics": {
+        "margin_M": 8,
+        "pain_S": 6,
+        "decision_D": 7,
+        "viral_V": 6,
+        "web_urgency_W": 7,
+        "budget_F": 5
+      },
+      "total_leads_in_database": 10,
+      "percentage_of_database": 0.19,
+      "absorbed_google_categories_count": 3,
+      "absorbed_google_categories": [
+        {
+          "google_type": "accounting",
+          "count": 5,
+          "percentage": 50.0
+        },
+        {
+          "google_type": "finance",
+          "count": 4,
+          "percentage": 40.0
+        },
+        {
+          "google_type": "insurance_agency",
+          "count": 1,
+          "percentage": 10.0
+        }
+      ]
+    },
+    {
+      "archetype_id": "night_club",
+      "display_name": "Clubes Nocturnos",
+      "bnai_score": 406,
+      "metrics": {
+        "margin_M": 8,
+        "pain_S": 6,
+        "decision_D": 5,
+        "viral_V": 4,
+        "web_urgency_W": 9,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 136,
+      "percentage_of_database": 2.61,
+      "absorbed_google_categories_count": 9,
+      "absorbed_google_categories": [
+        {
+          "google_type": "night_club",
+          "count": 47,
+          "percentage": 34.6
+        },
+        {
+          "google_type": "bar",
+          "count": 36,
+          "percentage": 26.5
+        },
+        {
+          "google_type": "bar_and_grill",
+          "count": 36,
+          "percentage": 26.5
+        },
+        {
+          "google_type": "lounge_bar",
+          "count": 10,
+          "percentage": 7.4
+        },
+        {
+          "google_type": "irish_pub",
+          "count": 2,
+          "percentage": 1.5
+        },
+        {
+          "google_type": "brewpub",
+          "count": 2,
+          "percentage": 1.5
+        },
+        {
+          "google_type": "concert_hall",
+          "count": 1,
+          "percentage": 0.7
+        },
+        {
+          "google_type": "karaoke",
+          "count": 1,
+          "percentage": 0.7
+        },
+        {
+          "google_type": "wine_bar",
+          "count": 1,
+          "percentage": 0.7
+        }
+      ]
+    },
+    {
+      "archetype_id": "sports_club",
+      "display_name": "Canchas (Pádel/Fútbol/Tenis)",
+      "bnai_score": 381,
+      "metrics": {
+        "margin_M": 6,
+        "pain_S": 6,
+        "decision_D": 6,
+        "viral_V": 5,
+        "web_urgency_W": 8,
+        "budget_F": 10
+      },
+      "total_leads_in_database": 137,
+      "percentage_of_database": 2.63,
+      "absorbed_google_categories_count": 11,
+      "absorbed_google_categories": [
+        {
+          "google_type": "sports_club",
+          "count": 94,
+          "percentage": 68.6
+        },
+        {
+          "google_type": "sports_coaching",
+          "count": 13,
+          "percentage": 9.5
+        },
+        {
+          "google_type": "sports_school",
+          "count": 11,
+          "percentage": 8.0
+        },
+        {
+          "google_type": "educational_institution",
+          "count": 6,
+          "percentage": 4.4
+        },
+        {
+          "google_type": "sports_complex",
+          "count": 3,
+          "percentage": 2.2
+        },
+        {
+          "google_type": "university",
+          "count": 3,
+          "percentage": 2.2
+        },
+        {
+          "google_type": "athletic_field",
+          "count": 3,
+          "percentage": 2.2
+        },
+        {
+          "google_type": "academic_department",
+          "count": 1,
+          "percentage": 0.7
+        },
+        {
+          "google_type": "golf_course",
+          "count": 1,
+          "percentage": 0.7
+        },
+        {
+          "google_type": "playground",
+          "count": 1,
+          "percentage": 0.7
+        },
+        {
+          "google_type": "sports_activity_location",
+          "count": 1,
+          "percentage": 0.7
+        }
+      ]
+    },
+    {
+      "archetype_id": "barber_shop",
+      "display_name": "Barberías",
+      "bnai_score": 357,
+      "metrics": {
+        "margin_M": 5,
+        "pain_S": 6,
+        "decision_D": 8,
+        "viral_V": 9,
+        "web_urgency_W": 6,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 210,
+      "percentage_of_database": 4.03,
+      "absorbed_google_categories_count": 1,
+      "absorbed_google_categories": [
+        {
+          "google_type": "barber_shop",
+          "count": 210,
+          "percentage": 100.0
+        }
+      ]
+    },
+    {
+      "archetype_id": "yoga_studio",
+      "display_name": "Estudios de Yoga",
+      "bnai_score": 323,
+      "metrics": {
+        "margin_M": 5,
+        "pain_S": 6,
+        "decision_D": 7,
+        "viral_V": 5,
+        "web_urgency_W": 6,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 51,
+      "percentage_of_database": 0.98,
+      "absorbed_google_categories_count": 2,
+      "absorbed_google_categories": [
+        {
+          "google_type": "fitness_center",
+          "count": 30,
+          "percentage": 58.8
+        },
+        {
+          "google_type": "yoga_studio",
+          "count": 21,
+          "percentage": 41.2
+        }
+      ]
+    },
+    {
+      "archetype_id": "painter",
+      "display_name": "Pintores",
+      "bnai_score": 315,
+      "metrics": {
+        "margin_M": 5,
+        "pain_S": 7,
+        "decision_D": 8,
+        "viral_V": 5,
+        "web_urgency_W": 3,
+        "budget_F": 5
+      },
+      "total_leads_in_database": 0,
+      "percentage_of_database": 0.0,
+      "absorbed_google_categories_count": 0,
+      "absorbed_google_categories": []
+    },
+    {
+      "archetype_id": "beauty_salon",
+      "display_name": "Salones de Belleza",
+      "bnai_score": 292,
+      "metrics": {
+        "margin_M": 5,
+        "pain_S": 5,
+        "decision_D": 7,
+        "viral_V": 9,
+        "web_urgency_W": 6,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 527,
+      "percentage_of_database": 10.11,
+      "absorbed_google_categories_count": 7,
+      "absorbed_google_categories": [
+        {
+          "google_type": "beauty_salon",
+          "count": 448,
+          "percentage": 85.0
+        },
+        {
+          "google_type": "nail_salon",
+          "count": 68,
+          "percentage": 12.9
+        },
+        {
+          "google_type": "hair_salon",
+          "count": 5,
+          "percentage": 0.9
+        },
+        {
+          "google_type": "shoe_store",
+          "count": 2,
+          "percentage": 0.4
+        },
+        {
+          "google_type": "body_art_service",
+          "count": 2,
+          "percentage": 0.4
+        },
+        {
+          "google_type": "makeup_artist",
+          "count": 1,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "beautician",
+          "count": 1,
+          "percentage": 0.2
+        }
+      ]
+    },
+    {
+      "archetype_id": "gym",
+      "display_name": "Gimnasios",
+      "bnai_score": 284,
+      "metrics": {
+        "margin_M": 6,
+        "pain_S": 5,
+        "decision_D": 5,
+        "viral_V": 8,
+        "web_urgency_W": 7,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 294,
+      "percentage_of_database": 5.64,
+      "absorbed_google_categories_count": 1,
+      "absorbed_google_categories": [
+        {
+          "google_type": "gym",
+          "count": 294,
+          "percentage": 100.0
+        }
+      ]
+    },
+    {
+      "archetype_id": "florist",
+      "display_name": "Florerías",
+      "bnai_score": 264,
+      "metrics": {
+        "margin_M": 4,
+        "pain_S": 6,
+        "decision_D": 7,
+        "viral_V": 6,
+        "web_urgency_W": 5,
+        "budget_F": 9
+      },
+      "total_leads_in_database": 215,
+      "percentage_of_database": 4.12,
+      "absorbed_google_categories_count": 4,
+      "absorbed_google_categories": [
+        {
+          "google_type": "florist",
+          "count": 151,
+          "percentage": 70.2
+        },
+        {
+          "google_type": "store",
+          "count": 57,
+          "percentage": 26.5
+        },
+        {
+          "google_type": "department_store",
+          "count": 6,
+          "percentage": 2.8
+        },
+        {
+          "google_type": "gift_shop",
+          "count": 1,
+          "percentage": 0.5
+        }
+      ]
+    },
+    {
+      "archetype_id": "restaurant",
+      "display_name": "Restaurantes",
+      "bnai_score": 170,
+      "metrics": {
+        "margin_M": 4,
+        "pain_S": 4,
+        "decision_D": 3,
+        "viral_V": 10,
+        "web_urgency_W": 7,
+        "budget_F": 8
+      },
+      "total_leads_in_database": 1320,
+      "percentage_of_database": 25.32,
+      "absorbed_google_categories_count": 52,
+      "absorbed_google_categories": [
+        {
+          "google_type": "restaurant",
+          "count": 411,
+          "percentage": 31.1
+        },
+        {
+          "google_type": "mexican_restaurant",
+          "count": 155,
+          "percentage": 11.7
+        },
+        {
+          "google_type": "taco_restaurant",
+          "count": 131,
+          "percentage": 9.9
+        },
+        {
+          "google_type": "pizza_restaurant",
+          "count": 94,
+          "percentage": 7.1
+        },
+        {
+          "google_type": "seafood_restaurant",
+          "count": 61,
+          "percentage": 4.6
+        },
+        {
+          "google_type": "hamburger_restaurant",
+          "count": 47,
+          "percentage": 3.6
+        },
+        {
+          "google_type": "chicken_restaurant",
+          "count": 42,
+          "percentage": 3.2
+        },
+        {
+          "google_type": "italian_restaurant",
+          "count": 40,
+          "percentage": 3.0
+        },
+        {
+          "google_type": "fast_food_restaurant",
+          "count": 40,
+          "percentage": 3.0
+        },
+        {
+          "google_type": "sushi_restaurant",
+          "count": 36,
+          "percentage": 2.7
+        },
+        {
+          "google_type": "japanese_restaurant",
+          "count": 29,
+          "percentage": 2.2
+        },
+        {
+          "google_type": "hotel",
+          "count": 26,
+          "percentage": 2.0
+        },
+        {
+          "google_type": "chicken_wings_restaurant",
+          "count": 24,
+          "percentage": 1.8
+        },
+        {
+          "google_type": "barbecue_restaurant",
+          "count": 19,
+          "percentage": 1.4
+        },
+        {
+          "google_type": "breakfast_restaurant",
+          "count": 18,
+          "percentage": 1.4
+        },
+        {
+          "google_type": "brunch_restaurant",
+          "count": 16,
+          "percentage": 1.2
+        },
+        {
+          "google_type": "american_restaurant",
+          "count": 14,
+          "percentage": 1.1
+        },
+        {
+          "google_type": "family_restaurant",
+          "count": 13,
+          "percentage": 1.0
+        },
+        {
+          "google_type": "argentinian_restaurant",
+          "count": 10,
+          "percentage": 0.8
+        },
+        {
+          "google_type": "meal_takeaway",
+          "count": 10,
+          "percentage": 0.8
+        },
+        {
+          "google_type": "steak_house",
+          "count": 9,
+          "percentage": 0.7
+        },
+        {
+          "google_type": "UNKNOWN",
+          "count": 8,
+          "percentage": 0.6
+        },
+        {
+          "google_type": "chinese_restaurant",
+          "count": 7,
+          "percentage": 0.5
+        },
+        {
+          "google_type": "korean_restaurant",
+          "count": 6,
+          "percentage": 0.5
+        },
+        {
+          "google_type": "hawaiian_restaurant",
+          "count": 5,
+          "percentage": 0.4
+        },
+        {
+          "google_type": "brazilian_restaurant",
+          "count": 4,
+          "percentage": 0.3
+        },
+        {
+          "google_type": "travel_agency",
+          "count": 4,
+          "percentage": 0.3
+        },
+        {
+          "google_type": "event_venue",
+          "count": 3,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "vegan_restaurant",
+          "count": 3,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "dessert_restaurant",
+          "count": 3,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "ramen_restaurant",
+          "count": 3,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "buffet_restaurant",
+          "count": 3,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "gastropub",
+          "count": 3,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "spanish_restaurant",
+          "count": 2,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "butcher_shop",
+          "count": 2,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "diner",
+          "count": 2,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "bistro",
+          "count": 2,
+          "percentage": 0.2
+        },
+        {
+          "google_type": "french_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "extended_stay_hotel",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "swiss_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "pizza_delivery",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "hot_dog_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "lebanese_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "sandwich_shop",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "greek_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "deli",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "german_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "asian_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "burrito_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "indian_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "salad_shop",
+          "count": 1,
+          "percentage": 0.1
+        },
+        {
+          "google_type": "vegetarian_restaurant",
+          "count": 1,
+          "percentage": 0.1
+        }
+      ]
+    },
+    {
+      "archetype_id": "bakery",
+      "display_name": "Panaderías",
+      "bnai_score": 102,
+      "metrics": {
+        "margin_M": 2,
+        "pain_S": 3,
+        "decision_D": 5,
+        "viral_V": 8,
+        "web_urgency_W": 4,
+        "budget_F": 8
+      },
+      "total_leads_in_database": 372,
+      "percentage_of_database": 7.14,
+      "absorbed_google_categories_count": 13,
+      "absorbed_google_categories": [
+        {
+          "google_type": "bakery",
+          "count": 162,
+          "percentage": 43.5
+        },
+        {
+          "google_type": "cake_shop",
+          "count": 67,
+          "percentage": 18.0
+        },
+        {
+          "google_type": "pastry_shop",
+          "count": 63,
+          "percentage": 16.9
+        },
+        {
+          "google_type": "dessert_shop",
+          "count": 22,
+          "percentage": 5.9
+        },
+        {
+          "google_type": "convenience_store",
+          "count": 19,
+          "percentage": 5.1
+        },
+        {
+          "google_type": "donut_shop",
+          "count": 15,
+          "percentage": 4.0
+        },
+        {
+          "google_type": "food_store",
+          "count": 8,
+          "percentage": 2.2
+        },
+        {
+          "google_type": "ice_cream_shop",
+          "count": 6,
+          "percentage": 1.6
+        },
+        {
+          "google_type": "grocery_store",
+          "count": 4,
+          "percentage": 1.1
+        },
+        {
+          "google_type": "supermarket",
+          "count": 3,
+          "percentage": 0.8
+        },
+        {
+          "google_type": "confectionery",
+          "count": 1,
+          "percentage": 0.3
+        },
+        {
+          "google_type": "candy_store",
+          "count": 1,
+          "percentage": 0.3
+        },
+        {
+          "google_type": "acai_shop",
+          "count": 1,
+          "percentage": 0.3
+        }
+      ]
+    },
+    {
+      "archetype_id": "cafe",
+      "display_name": "Cafeterías",
+      "bnai_score": 96,
+      "metrics": {
+        "margin_M": 3,
+        "pain_S": 3,
+        "decision_D": 3,
+        "viral_V": 9,
+        "web_urgency_W": 5,
+        "budget_F": 6
+      },
+      "total_leads_in_database": 356,
+      "percentage_of_database": 6.83,
+      "absorbed_google_categories_count": 6,
+      "absorbed_google_categories": [
+        {
+          "google_type": "coffee_shop",
+          "count": 241,
+          "percentage": 67.7
+        },
+        {
+          "google_type": "cafe",
+          "count": 81,
+          "percentage": 22.8
+        },
+        {
+          "google_type": "cafeteria",
+          "count": 24,
+          "percentage": 6.7
+        },
+        {
+          "google_type": "tea_house",
+          "count": 5,
+          "percentage": 1.4
+        },
+        {
+          "google_type": "juice_shop",
+          "count": 3,
+          "percentage": 0.8
+        },
+        {
+          "google_type": "coffee_roastery",
+          "count": 2,
+          "percentage": 0.6
+        }
+      ]
+    }
+  ]
+}

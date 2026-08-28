@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>MESLATT // Phase 2 Round-Robin Queue & API Budget</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+
+        /* ==================================================
+           GLOBAL OS DRAWER / SIDEBAR (SLIDE-OVER CYBERPUNK)
+           ================================================== */
+        .os-drawer-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 99990; opacity: 0; visibility: hidden;
+            transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.24s;
+        }
+        .os-drawer-overlay.active { opacity: 1; visibility: visible; }
+
+        .os-drawer {
+            position: fixed; top: 0; bottom: 0; left: 0;
+            width: 300px; max-width: 85vw;
+            background: #09090b;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 99999;
+            display: flex; flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Inter', sans-serif; color: #e4e4e7;
+        }
+        .os-drawer.active { transform: translateX(0); }
+
+        .os-drawer-header {
+            padding: 20px 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .os-brand-cluster { display: flex; align-items: center; gap: 12px; }
+        .os-brand-logo {
+            width: 32px; height: 32px; background: #ffffff; color: #09090b;
+            font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 4px; box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+        }
+        .os-brand-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 14px;
+            font-weight: 700; color: #ffffff; letter-spacing: 0.12em; line-height: 1.2;
+        }
+        .os-brand-title span { color: #3b82f6; font-weight: 800; }
+        .os-brand-subtitle {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px;
+            color: #71717a; letter-spacing: 0.15em; text-transform: uppercase;
+        }
+
+        .os-close-btn {
+            width: 28px; height: 28px; border-radius: 6px; background: transparent;
+            border: 1px solid transparent; color: #71717a;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.15s ease;
+        }
+        .os-close-btn:hover {
+            background: rgba(255, 255, 255, 0.06); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .os-drawer-body {
+            flex: 1; padding: 20px 14px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .os-nav-section-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px;
+            font-weight: 700; color: #52525b; letter-spacing: 0.2em; padding-left: 10px;
+        }
+        .os-nav-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .os-nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; border-radius: 8px; text-decoration: none;
+            color: #a1a1aa; background: transparent;
+            border: 1px solid transparent; transition: all 0.18s ease;
+        }
+        .os-nav-item:hover {
+            background: rgba(255, 255, 255, 0.04); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .os-nav-item.active {
+            background: rgba(255, 255, 255, 0.07); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .os-nav-icon {
+            width: 20px; height: 20px; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; color: #71717a; transition: color 0.18s ease;
+        }
+        .os-nav-item:hover .os-nav-icon, .os-nav-item.active .os-nav-icon { color: #ffffff; }
+        .os-nav-item.active .os-nav-icon { color: #3b82f6; }
+
+        .os-nav-meta { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .os-nav-name { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+        .os-nav-desc { font-size: 10px; color: #71717a; letter-spacing: -0.005em; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .os-nav-pill {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+            color: #52525b; background: rgba(255, 255, 255, 0.04);
+            padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .os-nav-item.active .os-nav-pill {
+            color: #3b82f6; border-color: rgba(59, 130, 246, 0.25); background: rgba(59, 130, 246, 0.1);
+        }
+
+        .os-drawer-footer {
+            padding: 16px 20px; border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; align-items: center; justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #71717a;
+        }
+        .os-status-indicator { display: flex; align-items: center; gap: 8px; }
+        .os-status-pulse {
+            width: 6px; height: 6px; background: #10b981; border-radius: 50%;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); animation: os-pulse 2s infinite;
+        }
+        @keyframes os-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+        .os-version-tag { font-size: 9px; color: #52525b; letter-spacing: 0.1em; }
+    </style>
+</head>
+<body class="bg-[#fafafa] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen flex flex-col selection:bg-emerald-500/30">
+
+    <!-- GLOBAL OS BACKDROP OVERLAY -->
+    <div id="os-drawer-overlay" class="os-drawer-overlay" onclick="toggleOSDrawer(false)"></div>
+
+    <!-- GLOBAL OS SLIDE-OVER DRAWER -->
+    <aside id="os-drawer" class="os-drawer">
+        <div class="os-drawer-header">
+            <div class="os-brand-cluster">
+                <div class="os-brand-logo">M</div>
+                <div>
+                    <div class="os-brand-title">MESLATT <span>OS</span></div>
+                    <div class="os-brand-subtitle">SYSTEM // V4.2</div>
+                </div>
+            </div>
+            <button class="os-close-btn" onclick="toggleOSDrawer(false)" title="Close Menu (Esc)">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="os-drawer-body">
+            <div class="os-nav-section-title">CORE MODULES</div>
+            <nav class="os-nav-list">
+                <a href="/crm" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="5" height="18" rx="1.2"/>
+                            <rect x="10" y="3" width="5" height="11" rx="1.2"/>
+                            <rect x="17" y="3" width="5" height="15" rx="1.2"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Pipeline CRM</span>
+                        <span class="os-nav-desc">Lead Management & Funnel</span>
+                    </div>
+                    <div class="os-nav-pill">01</div>
+                </a>
+
+                <a href="/crm/map" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                            <polyline points="2 17 12 22 22 17"/>
+                            <polyline points="2 12 12 17 22 12"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Tactical Map</span>
+                        <span class="os-nav-desc">H3 Fog of War & Radar</span>
+                    </div>
+                    <div class="os-nav-pill">02</div>
+                </a>
+
+                <a href="/crm/dashboard" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18 17V9"/>
+                            <path d="M13 17V5"/>
+                            <path d="M8 17v-3"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Allocation Matrix</span>
+                        <span class="os-nav-desc">MCDA Pareto Budget</span>
+                    </div>
+                    <div class="os-nav-pill">03</div>
+                </a>
+
+                <a href="/crm/queue" class="os-nav-item active">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="5" rx="1"/>
+                            <rect x="2" y="11" width="20" height="5" rx="1"/>
+                            <rect x="2" y="18" width="20" height="5" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Phase 2 Queue</span>
+                        <span class="os-nav-desc">Round-Robin API Budget</span>
+                    </div>
+                    <div class="os-nav-pill">04</div>
+                </a>
+            </nav>
+        </div>
+
+        <div class="os-drawer-footer">
+            <div class="os-status-indicator">
+                <span class="os-status-pulse"></span>
+                <span>SYSTEM ONLINE</span>
+            </div>
+            <div class="os-version-tag">PORT 5000</div>
+        </div>
+    </aside>
+
+    <!-- TOPBAR -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-6 py-3 flex items-center justify-between transition-colors">
+        <div class="flex items-center gap-4">
+            <button onclick="toggleOSDrawer(true)" class="p-2 rounded bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-mono flex items-center gap-2 transition-all">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                <span>MENU</span>
+            </button>
+            <div>
+                <h1 class="text-sm font-bold font-mono tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    PHASE 2 ROUND-ROBIN QUEUE & API BUDGET
+                </h1>
+                <p class="text-[10px] font-mono text-zinc-500">Taxonomy-Driven BNAI Extraction Dispatcher</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button id="btn-resync" onclick="refreshQueue()" class="px-3 py-1.5 rounded bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white font-mono text-xs flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-rotate"></i> <span>Re-Sync</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+
+        <!-- TOP METRICS GRID -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-zinc-900/80 border border-zinc-800 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-zinc-500">Hot Leads</span>
+                <div id="m-hot-leads" class="text-xl font-bold font-mono text-white mt-1">0</div>
+                <span class="text-[9px] font-mono text-zinc-500">Qualified</span>
+            </div>
+            <div class="bg-zinc-900/80 border border-zinc-800 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-zinc-500">Active Categories</span>
+                <div id="m-categories" class="text-xl font-bold font-mono text-sky-400 mt-1">0</div>
+                <span class="text-[9px] font-mono text-zinc-500">Google primaryType</span>
+            </div>
+            <div class="bg-zinc-900/80 border border-zinc-800 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-zinc-500">Budget Limit</span>
+                <div id="m-budget" class="text-xl font-bold font-mono text-white mt-1">5,000</div>
+                <span class="text-[9px] font-mono text-zinc-500">$100 USD Ceiling</span>
+            </div>
+            <div class="bg-zinc-900/80 border border-zinc-800 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-zinc-500">Calls Used</span>
+                <div id="m-used" class="text-xl font-bold font-mono text-sky-400 mt-1">29</div>
+                <span class="text-[9px] font-mono text-sky-500/80">Est. $1.10 USD</span>
+            </div>
+            <div class="bg-zinc-900/80 border border-zinc-800 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-zinc-500">Safety Reserve</span>
+                <div id="m-reserve" class="text-xl font-bold font-mono text-amber-400 mt-1">30</div>
+                <span class="text-[9px] font-mono text-amber-500/80">Pitch Buffer</span>
+            </div>
+            <div class="bg-zinc-900/80 border border-zinc-800 rounded-lg p-3.5 flex flex-col justify-between">
+                <span class="text-[10px] font-mono uppercase text-zinc-500">Scheduled Calls</span>
+                <div id="m-scheduled" class="text-xl font-bold font-mono text-emerald-400 mt-1">0</div>
+                <span class="text-[9px] font-mono text-emerald-500/80">Funded in Queue</span>
+            </div>
+        </div>
+
+        <!-- BUDGET ALLOCATION PROGRESS BAR -->
+        <div class="bg-zinc-900/80 border border-zinc-800 rounded-lg p-4 space-y-2">
+            <div class="flex justify-between items-center text-xs font-mono">
+                <span class="text-zinc-400">Phase 2 API Quota Allocation (<span id="txt-usage" class="text-white font-bold">0</span> / <span id="txt-limit" class="text-white font-bold">5,000</span> calls)</span>
+                <span id="txt-percent" class="text-emerald-400 font-bold">0%</span>
+            </div>
+            <div class="w-full h-3 bg-zinc-800 rounded-full overflow-hidden flex">
+                <div id="bar-used" class="bg-sky-500 h-full transition-all duration-500" style="width: 1%"></div>
+                <div id="bar-allocated" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
+                <div id="bar-reserve" class="bg-amber-500 h-full transition-all duration-500" style="width: 1%"></div>
+            </div>
+            <div class="flex flex-wrap justify-between items-center text-[10px] font-mono text-zinc-500 pt-1 gap-3">
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-sky-500"></span> Already Used (<span id="txt-used-calls">29</span> calls)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Scheduled Round-Robin Extraction</span>
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Safety Reserve Buffer (30 calls)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-zinc-700"></span> Free Quota Available</span>
+            </div>
+        </div>
+
+        <!-- CONTROLS & SEARCH BAR -->
+        <div class="flex flex-wrap items-center justify-between gap-4 bg-zinc-900/60 border border-zinc-800 p-4 rounded-lg">
+            <div class="flex flex-wrap items-center gap-3 flex-1">
+                <div class="relative min-w-[260px] flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                    <input type="text" id="search-input" onkeyup="filterQueue()" placeholder="SEARCH PROSPECT, CATEGORY OR CITY..." 
+                           class="w-full pl-9 pr-3 py-2 bg-zinc-950 border border-zinc-800 rounded text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500">
+                </div>
+                <select id="filter-round" onchange="filterQueue()" class="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-xs font-mono text-zinc-300 focus:outline-none focus:border-emerald-500">
+                    <option value="all">ALL ROUNDS</option>
+                    <option value="1">ROUND 1 (TOP 1 PER CAT)</option>
+                    <option value="2">ROUND 2 (TOP 2 PER CAT)</option>
+                    <option value="3">ROUND 3 (TOP 3 PER CAT)</option>
+                    <option value="funded">FUNDED CALLS ONLY</option>
+                </select>
+                <select id="filter-archetype" onchange="filterQueue()" class="bg-zinc-950 border border-zinc-800 rounded px-3 py-2 text-xs font-mono text-zinc-300 focus:outline-none focus:border-emerald-500">
+                    <option value="all">ALL ARCHETYPES</option>
+                </select>
+            </div>
+            <div class="text-xs font-mono text-zinc-400">
+                Displaying: <span id="count-displayed" class="text-white font-bold">0</span> prospects
+            </div>
+        </div>
+
+        <!-- ROUNDS CONTAINER -->
+        <div id="rounds-container" class="space-y-6">
+            <div class="text-center py-12 text-zinc-500 font-mono text-xs">
+                <i class="fa-solid fa-circle-notch fa-spin text-lg mb-2"></i>
+                <p>Loading Round-Robin Queue...</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let queueData = null;
+
+        function toggleOSDrawer(open) {
+            const overlay = document.getElementById('os-drawer-overlay');
+            const drawer = document.getElementById('os-drawer');
+            if (open) {
+                overlay.classList.add('active');
+                drawer.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+                drawer.classList.remove('active');
+            }
+        }
+
+        // Close on ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') toggleOSDrawer(false);
+        });
+
+        async function fetchQueue() {
+            try {
+                const endpoint = window.location.pathname.includes('/crm') ? '/crm/api/queue' : '/api/queue';
+                const res = await fetch(endpoint);
+                if (!res.ok) throw new Error('API route returned ' + res.status);
+                queueData = await res.json();
+                renderMetrics();
+                populateArchetypeFilter();
+                renderRounds();
+            } catch (err) {
+                console.error("Queue load error:", err);
+                document.getElementById('rounds-container').innerHTML = `
+                    <div class="p-8 text-center bg-zinc-900 border border-zinc-800 rounded-lg text-rose-400 font-mono text-xs">
+                        <i class="fa-solid fa-triangle-exclamation text-xl mb-2"></i>
+                        <p>Error loading queue: ${err.message}</p>
+                        <p class="text-zinc-500 mt-2">Make sure 06_build_round_robin_queue.py has been generated.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderMetrics() {
+            const m = queueData.metrics || {};
+            const hotLeads = m.total_qualified_hot_leads || 0;
+            const categories = m.active_categories_count || 0;
+            const limit = m.budget_limit || 5000;
+            const used = m.used_api_calls || 29;
+            const reserve = m.safety_reserve_buffer || 30;
+            const scheduled = m.scheduled_new_extractions || 0;
+            const totalRounds = m.total_rounds_constructed || 0;
+
+            document.getElementById('m-hot-leads').innerText = hotLeads.toLocaleString();
+            document.getElementById('m-categories').innerText = categories;
+            document.getElementById('m-budget').innerText = limit.toLocaleString();
+            document.getElementById('m-used').innerText = used;
+            document.getElementById('m-reserve').innerText = reserve;
+            document.getElementById('m-scheduled').innerText = scheduled.toLocaleString();
+
+            document.getElementById('txt-usage').innerText = (used + scheduled).toLocaleString();
+            document.getElementById('txt-limit').innerText = limit.toLocaleString();
+            document.getElementById('txt-used-calls').innerText = used;
+
+            const usedPct = ((used / limit) * 100).toFixed(1);
+            const allocPct = ((scheduled / limit) * 100).toFixed(1);
+            const resPct = ((reserve / limit) * 100).toFixed(1);
+
+            document.getElementById('txt-percent').innerText = `${(( (used + scheduled) / limit) * 100).toFixed(1)}% (${used + scheduled} total calls)`;
+            document.getElementById('bar-used').style.width = `${Math.max(usedPct, 0.6)}%`;
+            document.getElementById('bar-allocated').style.width = `${allocPct}%`;
+            document.getElementById('bar-reserve').style.width = `${resPct}%`;
+        }
+
+        function populateArchetypeFilter() {
+            const archSelect = document.getElementById('filter-archetype');
+            const archetypes = new Set();
+            (queueData.category_summary || []).forEach(c => {
+                if (c.archetype_name) archetypes.add(c.archetype_name);
+            });
+            Array.from(archetypes).sort().forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a.toLowerCase();
+                opt.innerText = a.toUpperCase();
+                archSelect.appendChild(opt);
+            });
+        }
+
+        function renderRounds() {
+            const container = document.getElementById('rounds-container');
+            container.innerHTML = '';
+
+            const q = document.getElementById('search-input').value.toLowerCase().trim();
+            const roundFilter = document.getElementById('filter-round').value;
+            const archFilter = document.getElementById('filter-archetype').value;
+
+            let totalDisplayed = 0;
+
+            (queueData.rounds || []).forEach(r => {
+                if (roundFilter !== 'all' && roundFilter !== 'funded' && String(r.round_number) !== roundFilter) {
+                    return;
+                }
+
+                // Filter leads inside the round
+                const matchingLeads = (r.leads || []).filter(lead => {
+                    if (roundFilter === 'funded' && !lead.within_budget) return false;
+                    
+                    const name = (lead.business_name || '').toLowerCase();
+                    const cat = (lead.category || '').toLowerCase();
+                    const city = (lead.city || '').toLowerCase();
+                    const arch = (lead.archetype_name || '').toLowerCase();
+
+                    if (q && !name.includes(q) && !cat.includes(q) && !city.includes(q)) return false;
+                    if (archFilter !== 'all' && arch !== archFilter) return false;
+
+                    return true;
+                });
+
+                if (matchingLeads.length === 0) return;
+                totalDisplayed += matchingLeads.length;
+
+                const roundCard = document.createElement('div');
+                roundCard.className = 'bg-zinc-900/80 border border-zinc-800 rounded-xl overflow-hidden shadow-sm';
+
+                const roundHeader = `
+                    <div class="px-5 py-3.5 bg-zinc-900 border-b border-zinc-800/80 flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <span class="px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/20">
+                                ROUND ${r.round_number}
+                            </span>
+                            <span class="text-xs font-mono text-zinc-400">
+                                ${matchingLeads.length} categories targeted • Requires <strong class="text-white">${r.new_api_calls_required}</strong> new API calls
+                            </span>
+                        </div>
+                        <div class="text-[11px] font-mono text-zinc-500">
+                            Cumulative API Usage: <span class="text-white font-bold">${r.cumulative_api_calls}</span> calls
+                        </div>
+                    </div>
+                `;
+
+                let rowsHtml = '';
+                matchingLeads.forEach(l => {
+                    let statusBadge = '';
+                    if (l.already_enriched) {
+                        statusBadge = '<span class="px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20 text-[10px] font-mono">PHASE 2 READY ($0)</span>';
+                    } else if (l.within_budget) {
+                        statusBadge = '<span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono">SCHEDULED (# ' + l.estimated_call_order + ')</span>';
+                    } else if (l.in_safety_reserve) {
+                        statusBadge = '<span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-mono">SAFETY RESERVE</span>';
+                    } else {
+                        statusBadge = '<span class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-500 text-[10px] font-mono">UNFUNDED BACKLOG</span>';
+                    }
+
+                    const tierColor = l.target_tier === 3 ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' : (l.target_tier === 2 ? 'text-sky-400 bg-sky-500/10 border-sky-500/20' : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20');
+                    const tierName = l.target_tier === 3 ? 'VIP T3' : (l.target_tier === 2 ? 'GROWTH T2' : 'STARTER T1');
+                    const cleanPhone = (l.phone || '').replace(/\D/g, '');
+
+                    rowsHtml += `
+                        <div class="px-5 py-4 hover:bg-zinc-800/40 transition-colors flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800/40 last:border-0">
+                            <div class="space-y-1.5 min-w-[280px] flex-1">
+                                <div class="flex items-center gap-2.5">
+                                    <h4 class="text-sm font-semibold text-white tracking-tight">${l.business_name}</h4>
+                                    <span class="px-1.5 py-0.5 rounded border text-[9px] font-mono ${tierColor}">${tierName}</span>
+                                    <span class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700 text-[9px] font-mono">${l.city}</span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-mono text-zinc-400">
+                                    <span class="px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700 text-[10px] font-mono font-bold tracking-wider">${l.archetype_name ? l.archetype_name.toUpperCase() : 'GENERAL'}</span>
+                                    <span class="text-emerald-400 font-bold">${l.category.replace(/_/g, ' ').toUpperCase()}</span>
+                                    <span>•</span>
+                                    <span>${l.rating} ★ (${l.reviews_count} reviews)</span>
+                                    ${l.phone ? `<span>•</span><a href="https://wa.me/52${cleanPhone}" target="_blank" class="text-emerald-400 hover:underline flex items-center gap-1"><i class="fa-brands fa-whatsapp"></i> ${l.phone}</a>` : ''}
+                                </div>
+                                <div class="text-[11px] font-mono text-zinc-500 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-location-dot text-[10px] text-zinc-600"></i>
+                                    <span class="truncate max-w-xl" title="${l.address}">${l.address || 'Address pending'}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <div class="text-right font-mono pr-2">
+                                    <div class="text-[10px] text-zinc-500 uppercase">BNAI POWER</div>
+                                    <div class="text-xs font-bold text-sky-400">${l.bnai_score} pts</div>
+                                </div>
+                                <div class="text-right font-mono pr-2">
+                                    <div class="text-[10px] text-zinc-500 uppercase">ANCHOR PRICE</div>
+                                    <div class="text-xs font-bold text-emerald-400">$${(l.suggested_price || 0).toLocaleString()}</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <a href="${l.google_maps_url}" target="_blank" class="px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-xs font-mono flex items-center gap-1.5 border border-zinc-700 transition-colors" title="Open in Google Maps">
+                                        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                        <span>Maps</span>
+                                    </a>
+                                    <a href="/crm/map" class="px-2.5 py-1.5 rounded bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs font-mono flex items-center gap-1.5 border border-sky-500/20 transition-colors" title="View in Tactical Radar Map">
+                                        <i class="fa-solid fa-radar text-[10px]"></i>
+                                        <span>Radar</span>
+                                    </a>
+                                </div>
+                                <div class="min-w-[140px] text-right">
+                                    ${statusBadge}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                roundCard.innerHTML = roundHeader + `<div class="divide-y divide-zinc-800/30">${rowsHtml}</div>`;
+                container.appendChild(roundCard);
+            });
+
+            document.getElementById('count-displayed').innerText = totalDisplayed.toLocaleString();
+        }
+
+        function filterQueue() {
+            renderRounds();
+        }
+
+        async function refreshQueue() {
+            const btn = document.getElementById('btn-resync');
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> <span>Re-Calculating...</span>';
+                btn.disabled = true;
+            }
+            try {
+                const endpoint = (window.location.pathname.includes('/crm') ? '/crm/api/queue' : '/api/queue') + '?rebuild=true';
+                const res = await fetch(endpoint, { method: 'POST' });
+                if (!res.ok) throw new Error('API route returned ' + res.status);
+                queueData = await res.json();
+                renderMetrics();
+                populateArchetypeFilter();
+                renderRounds();
+            } catch (err) {
+                console.error("Re-sync error:", err);
+                alert("Error recalculating queue: " + err.message);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '<i class="fa-solid fa-rotate"></i> <span>Re-Sync</span>';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // Initialize on load
+        fetchQueue();
+    </script>
+</body>
+</html>

@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>MESLATT // Interactive CRM Server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            boxShadow: {
+              'premium': '0 4px 20px -2px rgba(0, 0, 0, 0.03)',
+              'premium-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.3)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+        .interactive-element { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+
+    <style>
+        /* ==================================================
+           GLOBAL OS DRAWER / SIDEBAR (SLIDE-OVER CYBERPUNK)
+           ================================================== */
+        .os-drawer-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 99990; opacity: 0; visibility: hidden;
+            transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.24s;
+        }
+        .os-drawer-overlay.active { opacity: 1; visibility: visible; }
+
+        .os-drawer {
+            position: fixed; top: 0; bottom: 0; left: 0;
+            width: 300px; max-width: 85vw;
+            background: #09090b;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 99999;
+            display: flex; flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Inter', sans-serif; color: #e4e4e7;
+        }
+        .os-drawer.active { transform: translateX(0); }
+
+        .os-drawer-header {
+            padding: 20px 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .os-brand-cluster { display: flex; align-items: center; gap: 12px; }
+        .os-brand-logo {
+            width: 32px; height: 32px; background: #ffffff; color: #09090b;
+            font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 4px; box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+        }
+        .os-brand-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 14px;
+            font-weight: 700; color: #ffffff; letter-spacing: 0.12em; line-height: 1.2;
+        }
+        .os-brand-title span { color: #3b82f6; font-weight: 800; }
+        .os-brand-subtitle {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px;
+            color: #71717a; letter-spacing: 0.15em; text-transform: uppercase;
+        }
+
+        .os-close-btn {
+            width: 28px; height: 28px; border-radius: 6px; background: transparent;
+            border: 1px solid transparent; color: #71717a;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.15s ease;
+        }
+        .os-close-btn:hover {
+            background: rgba(255, 255, 255, 0.06); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .os-drawer-body {
+            flex: 1; padding: 20px 14px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .os-nav-section-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px;
+            font-weight: 700; color: #52525b; letter-spacing: 0.2em; padding-left: 10px;
+        }
+        .os-nav-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .os-nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; border-radius: 8px; text-decoration: none;
+            color: #a1a1aa; background: transparent;
+            border: 1px solid transparent; transition: all 0.18s ease;
+        }
+        .os-nav-item:hover {
+            background: rgba(255, 255, 255, 0.04); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .os-nav-item.active {
+            background: rgba(255, 255, 255, 0.07); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .os-nav-icon {
+            width: 20px; height: 20px; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; color: #71717a; transition: color 0.18s ease;
+        }
+        .os-nav-item:hover .os-nav-icon, .os-nav-item.active .os-nav-icon { color: #ffffff; }
+        .os-nav-item.active .os-nav-icon { color: #3b82f6; }
+
+        .os-nav-meta { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .os-nav-name { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+        .os-nav-desc { font-size: 10px; color: #71717a; letter-spacing: -0.005em; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .os-nav-pill {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+            color: #52525b; background: rgba(255, 255, 255, 0.04);
+            padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .os-nav-item.active .os-nav-pill {
+            color: #3b82f6; border-color: rgba(59, 130, 246, 0.25); background: rgba(59, 130, 246, 0.1);
+        }
+
+        .os-drawer-footer {
+            padding: 16px 20px; border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; align-items: center; justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #71717a;
+        }
+        .os-status-indicator { display: flex; align-items: center; gap: 8px; }
+        .os-status-pulse {
+            width: 6px; height: 6px; background: #10b981; border-radius: 50%;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); animation: os-pulse 2s infinite;
+        }
+        @keyframes os-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+        .os-version-tag { font-size: 9px; color: #52525b; letter-spacing: 0.1em; }
+    </style>
+
+</head>
+<body class="bg-[#fafafa] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen flex flex-col">
+
+    <!-- GLOBAL OS BACKDROP OVERLAY -->
+    <div id="os-drawer-overlay" class="os-drawer-overlay" onclick="toggleOSDrawer(false)"></div>
+
+    <!-- GLOBAL OS SLIDE-OVER DRAWER -->
+    <aside id="os-drawer" class="os-drawer">
+        <div class="os-drawer-header">
+            <div class="os-brand-cluster">
+                <div class="os-brand-logo">M</div>
+                <div>
+                    <div class="os-brand-title">MESLATT <span>OS</span></div>
+                    <div class="os-brand-subtitle">SYSTEM // V4.2</div>
+                </div>
+            </div>
+            <button class="os-close-btn" onclick="toggleOSDrawer(false)" title="Close Menu (Esc)">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="os-drawer-body">
+            <div class="os-nav-section-title">CORE MODULES</div>
+            <nav class="os-nav-list">
+                <a href="/crm" class="os-nav-item active">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="5" height="18" rx="1.2"/>
+                            <rect x="10" y="3" width="5" height="11" rx="1.2"/>
+                            <rect x="17" y="3" width="5" height="15" rx="1.2"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Pipeline CRM</span>
+                        <span class="os-nav-desc">Lead Management & Funnel</span>
+                    </div>
+                    <div class="os-nav-pill">01</div>
+                </a>
+
+                <a href="/crm/map" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                            <polyline points="2 17 12 22 22 17"/>
+                            <polyline points="2 12 12 17 22 12"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Tactical Map</span>
+                        <span class="os-nav-desc">H3 Fog of War & Radar</span>
+                    </div>
+                    <div class="os-nav-pill">02</div>
+                </a>
+
+                <a href="/crm/dashboard" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18 17V9"/>
+                            <path d="M13 17V5"/>
+                            <path d="M8 17v-3"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Allocation Matrix</span>
+                        <span class="os-nav-desc">MCDA Pareto Budget</span>
+                    </div>
+                    <div class="os-nav-pill">03</div>
+                </a>
+                            <a href="/crm/queue" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="5" rx="1"/>
+                            <rect x="2" y="11" width="20" height="5" rx="1"/>
+                            <rect x="2" y="18" width="20" height="5" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Phase 2 Queue</span>
+                        <span class="os-nav-desc">Round-Robin API Budget</span>
+                    </div>
+                    <div class="os-nav-pill">04</div>
+                </a>
+            </nav>
+        </div>
+
+        <div class="os-drawer-footer">
+            <div class="os-status-indicator">
+                <span class="os-status-pulse"></span>
+                <span>SYSTEM ONLINE</span>
+            </div>
+            <div class="os-version-tag">PORT 5000</div>
+        </div>
+    </aside>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-6 py-3 flex items-center justify-between transition-colors">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-3">
+                <button id="os-menu-trigger" onclick="toggleOSDrawer(true)" class="w-8 h-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold flex items-center justify-center text-sm font-mono rounded-[5px] shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer select-none border border-zinc-200 dark:border-transparent" title="Open Navigation Menu">
+                    M
+                </button>
+                <h1 class="font-semibold tracking-tight text-zinc-900 dark:text-white text-lg hidden sm:block font-mono tracking-widest cursor-pointer" onclick="toggleOSDrawer(true)">MESLATT</h1>
+            </div>
+            <div class="h-4 w-px bg-zinc-300 dark:bg-zinc-800 hidden sm:block"></div>
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest hidden md:inline">CRM Pipeline V4</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 rounded-md text-zinc-600 dark:text-zinc-400" id="hud-locked">Locked Leads: 0 / 5</div>
+        </div>
+    </header>
+
+    <!-- FILTER BAR -->
+    <div class="flex flex-wrap items-center gap-4 px-6 py-4 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+        <div class="flex flex-col gap-1 flex-1 min-w-[200px]">
+            <label class="text-[9px] font-mono uppercase tracking-widest text-zinc-500">Search</label>
+            <input type="text" id="filter-search" class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-zinc-500 transition-colors" placeholder="SEARCH PROSPECTS..." onkeyup="applyFilters()">
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] font-mono uppercase tracking-widest text-zinc-500">City</label>
+            <select id="filter-city" class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none" onchange="applyFilters()">
+                <option value="all">ALL CITIES</option>
+            </select>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] font-mono uppercase tracking-widest text-zinc-500">Niche</label>
+            <select id="filter-niche" class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none" onchange="applyFilters()">
+                <option value="all">ALL CATEGORIES</option>
+            </select>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] font-mono uppercase tracking-widest text-zinc-500">Status</label>
+            <select id="filter-status" class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none" onchange="applyFilters()">
+                <option value="all">ALL STATUSES</option>
+                <option value="NEW">NEW</option>
+                <option value="CONTACTED">CONTACTED</option>
+                <option value="PITCHED">PITCHED</option>
+                <option value="SOLD">SOLD</option>
+                <option value="REJECTED">REJECTED</option>
+            </select>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] font-mono uppercase tracking-widest text-zinc-500">Ownership</label>
+            <select id="filter-ownership" class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none" onchange="applyFilters()">
+                <option value="all">ALL LEADS</option>
+                <option value="mine">MY LOCKED LEADS</option>
+                <option value="free">FREE LEADS</option>
+            </select>
+        </div>
+        <div class="flex flex-col gap-1">
+            <label class="text-[9px] font-mono uppercase tracking-widest text-zinc-500">WhatsApp</label>
+            <select id="filter-whatsapp" class="bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-md px-3 py-1.5 text-xs font-mono focus:outline-none text-emerald-400 font-semibold" onchange="applyFilters()">
+                <option value="all">ALL (WA & NON-WA)</option>
+                <option value="verified">✅ VERIFIED WHATSAPP ONLY</option>
+                <option value="unverified">❌ NO WHATSAPP / UNCHECKED</option>
+            </select>
+        </div>
+    </div>
+
+    <main class="flex-1 w-full p-6 flex flex-col gap-6">
+        <!-- METRICS -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Displayed Leads</span>
+                <h3 class="text-3xl font-light tracking-tight text-zinc-900 dark:text-white" id="metric-displayed">0</h3>
+            </div>
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Total Hot Leads</span>
+                <h3 class="text-3xl font-light tracking-tight text-emerald-500 dark:text-emerald-400" id="metric-hot">0</h3>
+            </div>
+            <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">Total Database Size</span>
+                <h3 class="text-3xl font-light tracking-tight text-zinc-400 dark:text-zinc-500" id="metric-total">0</h3>
+            </div>
+        </section>
+
+        <!-- GRID -->
+        <div id="leads-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <div class="text-center mt-6">
+            <button id="btn-load-more" onclick="window.loadMore()" class="hidden bg-zinc-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-mono font-bold py-2.5 px-6 rounded-md shadow-sm transition-colors uppercase tracking-widest">Load More 50 Leads ▼</button>
+        </div>
+    </main>
+
+    <script>
+        let allLeads = [];
+        let filteredLeads = [];
+        let currentPage = 1;
+        const pageSize = 50;
+        
+        window.photoIndices = {};
+
+        const API_PREFIX = window.location.pathname.startsWith('/crm') ? '/crm' : '';
+
+        // Dynamic drawer links
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.os-nav-item');
+            if (navLinks.length >= 3) {
+                navLinks[0].href = API_PREFIX ? `${API_PREFIX}/` : '/';
+                navLinks[1].href = API_PREFIX ? `${API_PREFIX}/map` : '/map';
+                navLinks[2].href = API_PREFIX ? `${API_PREFIX}/dashboard` : '/dashboard';
+            }
+        });
+
+        async function fetchLeads() {
+            const res = await fetch(`${API_PREFIX}/api/leads`);
+            const data = await res.json();
+            
+            allLeads = data.sort((a, b) => {
+                if (a.locked_by === "admin" && b.locked_by !== "admin") return -1;
+                if (b.locked_by === "admin" && a.locked_by !== "admin") return 1;
+                const scoreA = a.phase2_score || 0;
+                const scoreB = b.phase2_score || 0;
+                return scoreB - scoreA;
+            });
+            
+            populateDropdowns();
+            updateHud();
+            applyFilters();
+        }
+
+        function populateDropdowns() {
+            const citySet = new Set();
+            const nicheSet = new Set();
+            
+            allLeads.forEach(L => {
+                const cz = (L.city_zone || L.address || "").toLowerCase();
+                if (cz && !cz.includes('http')) {
+                    // Extract simplistic city if address
+                    const parts = cz.split(',');
+                    const c = parts.length > 2 ? parts[parts.length-2].trim() : cz;
+                    if(c.length > 2) citySet.add(c);
+                }
+                if (L.primary_type) nicheSet.add(L.primary_type.toLowerCase());
+            });
+
+            const citySelect = document.getElementById('filter-city');
+            Array.from(citySet).sort().forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c; opt.innerText = c.toUpperCase();
+                citySelect.appendChild(opt);
+            });
+
+            const nicheSelect = document.getElementById('filter-niche');
+            Array.from(nicheSet).sort().forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n; opt.innerText = n.replace(/_/g, ' ').toUpperCase();
+                nicheSelect.appendChild(opt);
+            });
+        }
+
+        function updateHud() {
+            const lockedCount = allLeads.filter(l => l.locked_by === "admin").length;
+            const hud = document.getElementById('hud-locked');
+            hud.innerText = `Locked Leads: ${lockedCount} / 5`;
+            if (lockedCount >= 5) {
+                hud.classList.add('text-rose-500', 'border-rose-500');
+                hud.classList.remove('text-zinc-600', 'dark:text-zinc-400');
+            } else {
+                hud.classList.remove('text-rose-500', 'border-rose-500');
+                hud.classList.add('text-zinc-600', 'dark:text-zinc-400');
+            }
+            document.getElementById('metric-total').innerText = allLeads.length;
+            document.getElementById('metric-hot').innerText = allLeads.filter(l => l.is_hot_lead).length;
+        }
+
+        async function updateLeadData(pid, field, value) {
+            await fetch(`${API_PREFIX}/api/leads/${pid}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: "update_data", [field]: value })
+            });
+            const lead = allLeads.find(l => l.place_id === pid);
+            if (lead) lead[field] = value;
+        }
+
+        async function toggleLock(pid, lock) {
+            const res = await fetch(`${API_PREFIX}/api/leads/${pid}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: lock ? "lock" : "unlock" })
+            });
+            if (res.status === 400) {
+                alert("You have reached the maximum limit of 5 locked leads.");
+                return;
+            }
+            const data = await res.json();
+            if (data.success) {
+                const idx = allLeads.findIndex(l => l.place_id === pid);
+                if (idx > -1) allLeads[idx] = data.lead;
+                updateHud();
+                applyFilters();
+            }
+        }
+
+        window.changeCardPhoto = function(pid, direction, total) {
+            if (!window.photoIndices[pid]) window.photoIndices[pid] = 0;
+            window.photoIndices[pid] = (window.photoIndices[pid] + direction + total) % total;
+            const idx = window.photoIndices[pid];
+            const lead = allLeads.find(x => x.place_id === pid);
+            if (lead && lead.photos && lead.photos[idx]) {
+                document.getElementById('img_' + pid).src = lead.photos[idx];
+                document.getElementById('cnt_' + pid).innerText = (idx + 1) + ' / ' + total;
+            }
+        };
+
+        function renderGrid(append = false) {
+            const grid = document.getElementById('leads-grid');
+            if (!append) grid.innerHTML = '';
+            
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const chunk = filteredLeads.slice(start, end);
+            
+            chunk.forEach(L => {
+                const isLockedByMe = L.locked_by === "admin";
+                const isLockedByOther = L.locked_by && L.locked_by !== "admin";
+                
+                const tt = L.hot_lead_tier || 2;
+                const tierClass = tt === 1 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+                const tierName = tt === 1 ? 'TIER 1 (WHALE)' : 'TIER 2 (STD)';
+                
+                const cleanPhone = (L.phone || '').replace(/[^0-9]/g, '');
+                
+                let lockUi = '';
+                if (isLockedByMe) {
+                    const daysLeft = 7 - Math.floor((new Date() - new Date(L.locked_at)) / (1000 * 60 * 60 * 24));
+                    lockUi = `
+                        <div class="col-span-2 text-center text-[9px] font-mono text-zinc-400 mb-1">Expires in ${daysLeft} days (Locked by you)</div>
+                        <button class="col-span-2 bg-rose-600 hover:bg-rose-500 text-white font-mono font-bold text-[10px] py-2 rounded transition-colors uppercase tracking-wider" onclick="toggleLock('${L.place_id}', false)">RELEASE LEAD</button>
+                    `;
+                } else if (isLockedByOther) {
+                    lockUi = `<div class="col-span-2 text-center text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest py-2 bg-zinc-800/40 rounded border border-zinc-700/40">LOCKED BY OTHER USER</div>`;
+                } else {
+                    lockUi = `<button class="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-[10px] py-2 rounded transition-colors uppercase tracking-wider shadow-sm" onclick="toggleLock('${L.place_id}', true)">CLAIM LEAD (7 DAYS)</button>`;
+                }
+
+                const photos = (L.photos && L.photos.length > 0) ? L.photos : [];
+                let photoSection = '';
+                if (photos.length > 0) {
+                    photoSection = `
+                        <div class="relative w-full h-36 bg-zinc-900 rounded overflow-hidden border border-zinc-200 dark:border-zinc-800 mb-4">
+                            <img id="img_${L.place_id}" src="${photos[0]}" class="w-full h-full object-cover" />
+                            <div class="absolute bottom-0 left-0 right-0 bg-black/75 backdrop-blur-sm flex justify-between items-center px-2 py-1">
+                                <button onclick="window.changeCardPhoto('${L.place_id}', -1, ${photos.length})" class="text-zinc-300 font-mono text-[9px] hover:text-blue-400">← PREV</button>
+                                <span id="cnt_${L.place_id}" class="text-zinc-400 font-mono text-[9px]">${photos.length > 0 ? '1 / ' + photos.length : ''}</span>
+                                <button onclick="window.changeCardPhoto('${L.place_id}', 1, ${photos.length})" class="text-zinc-300 font-mono text-[9px] hover:text-blue-400">NEXT →</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                const waBadge = L.has_whatsapp === true
+                    ? `<span class="font-mono text-[9px] font-bold tracking-widest bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded flex items-center gap-1">WA VERIFIED</span>`
+                    : (L.has_whatsapp === false
+                        ? `<span class="font-mono text-[9px] font-bold tracking-widest bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded">NO WA</span>`
+                        : '');
+
+                const cardHtml = `
+                    <div class="bg-white dark:bg-[#121215] border ${isLockedByMe ? 'border-emerald-500/80 shadow-[0_0_20px_rgba(16,185,129,0.12)]' : 'border-zinc-200 dark:border-zinc-800/80'} rounded-xl shadow-premium dark:shadow-premium-dark flex flex-col overflow-hidden transition-all">
+                        
+                        <div class="flex justify-between items-center px-4 py-3 bg-zinc-50 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800/80">
+                            <div class="font-mono text-[9px] font-bold tracking-widest text-blue-400 uppercase">${L.primary_type || 'BUSINESS'}</div>
+                            <div class="flex items-center gap-1.5">
+                                ${waBadge}
+                                <div class="font-mono text-[9px] font-bold tracking-widest ${tierClass} px-2 py-0.5 rounded">${tierName}</div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 flex flex-col flex-1">
+                            <h3 class="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100 leading-tight mb-4 tracking-tight">${L.business_name}</h3>
+                            
+                            ${photoSection}
+                            
+                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="font-mono text-[8px] uppercase tracking-widest text-zinc-500">Score</span>
+                                    <span class="font-mono text-[11px] font-bold text-emerald-400">${L.phase2_score || 0} pts</span>
+                                </div>
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="font-mono text-[8px] uppercase tracking-widest text-zinc-500">Rating</span>
+                                    <span class="font-mono text-[11px] text-zinc-300 font-medium">${L.rating ? L.rating.toFixed(1) : '—'} <span class="text-amber-400 text-xs">★</span> <span class="text-zinc-500 text-[10px]">(${L.reviews_count || 0})</span></span>
+                                </div>
+                                <div class="col-span-2 flex flex-col gap-0.5">
+                                    <span class="font-mono text-[8px] uppercase tracking-widest text-zinc-500">Address</span>
+                                    <span class="text-[11px] text-zinc-300 truncate" title="${L.address}">${L.address || '—'}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- INTERACTIVE STATUS / PRICING / NOTES -->
+                            <div class="grid grid-cols-2 gap-2 bg-zinc-50 dark:bg-[#18181c] border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 mb-4">
+                                <div class="col-span-2 md:col-span-1 flex flex-col gap-1">
+                                    <label class="font-mono text-[8px] uppercase tracking-widest text-zinc-400">Status</label>
+                                    <select onchange="updateLeadData('${L.place_id}', 'sales_status', this.value)" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1 font-mono text-[10px] text-zinc-900 dark:text-zinc-100 outline-none focus:border-blue-500 transition-colors cursor-pointer">
+                                        <option value="NEW" ${L.sales_status === 'NEW' ? 'selected' : ''}>NEW</option>
+                                        <option value="CONTACTED" ${L.sales_status === 'CONTACTED' ? 'selected' : ''}>CONTACTED</option>
+                                        <option value="PITCHED" ${L.sales_status === 'PITCHED' ? 'selected' : ''}>PITCHED</option>
+                                        <option value="SOLD" ${L.sales_status === 'SOLD' ? 'selected' : ''}>SOLD</option>
+                                        <option value="REJECTED" ${L.sales_status === 'REJECTED' ? 'selected' : ''}>REJECTED</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-2 md:col-span-1 flex flex-col gap-1">
+                                    <label class="font-mono text-[8px] uppercase tracking-widest text-zinc-400">Final Price</label>
+                                    <input type="number" onchange="updateLeadData('${L.place_id}', 'final_price', this.value)" value="${L.final_price || ''}" placeholder="$ MXN" class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1 font-mono text-[10px] text-zinc-900 dark:text-zinc-100 outline-none focus:border-blue-500 transition-colors">
+                                </div>
+                                <div class="col-span-2 flex flex-col gap-1 mt-1">
+                                    <label class="font-mono text-[8px] uppercase tracking-widest text-zinc-400">Sales Notes</label>
+                                    <textarea onchange="updateLeadData('${L.place_id}', 'notes', this.value)" placeholder="Enter notes..." class="w-full bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1 text-[11px] text-zinc-900 dark:text-zinc-100 outline-none focus:border-blue-500 transition-colors min-h-[44px] resize-y">${L.notes || ''}</textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800/80 grid grid-cols-2 gap-2">
+                                <a href="https://api.whatsapp.com/send?phone=${cleanPhone}" target="_blank" class="text-center font-mono font-bold text-[10px] uppercase tracking-wider bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/25 rounded py-2 transition-colors">WhatsApp</a>
+                                <a href="${L.google_maps_url}" target="_blank" class="text-center font-mono font-bold text-[10px] uppercase tracking-wider bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/25 rounded py-2 transition-colors">Maps</a>
+                                ${lockUi}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                grid.insertAdjacentHTML('beforeend', cardHtml);
+            });
+            
+            document.getElementById('metric-displayed').innerText = filteredLeads.length;
+            const btnLoadMore = document.getElementById('btn-load-more');
+            if (end < filteredLeads.length) {
+                btnLoadMore.style.display = 'inline-block';
+            } else {
+                btnLoadMore.style.display = 'none';
+            }
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('filter-search').value.toLowerCase();
+            const city = document.getElementById('filter-city').value;
+            const niche = document.getElementById('filter-niche').value;
+            const status = document.getElementById('filter-status').value;
+            const ownership = document.getElementById('filter-ownership').value;
+            const whatsapp = document.getElementById('filter-whatsapp').value;
+
+            filteredLeads = allLeads.filter(L => {
+                const name = (L.business_name || "").toLowerCase();
+                const addr = (L.address || "").toLowerCase();
+                if (search && !name.includes(search) && !addr.includes(search)) return false;
+                if (city !== "all" && !addr.includes(city)) return false;
+                if (niche !== "all" && (L.primary_type || "").toLowerCase() !== niche) return false;
+                if (status !== "all" && (L.sales_status || "NEW") !== status) return false;
+                
+                if (ownership === "mine" && L.locked_by !== "admin") return false;
+                if (ownership === "free" && L.locked_by) return false;
+                
+                if (whatsapp === "verified" && L.has_whatsapp !== true) return false;
+                if (whatsapp === "unverified" && L.has_whatsapp === true) return false;
+
+                return true;
+            });
+            
+            currentPage = 1;
+            renderGrid(false);
+        }
+
+        window.loadMore = function() {
+            currentPage++;
+            renderGrid(true);
+        };
+
+        window.toggleOSDrawer = function(open) {
+            const drawer = document.getElementById('os-drawer');
+            const overlay = document.getElementById('os-drawer-overlay');
+            if (!drawer || !overlay) return;
+            
+            const shouldOpen = (open !== undefined) ? open : !drawer.classList.contains('active');
+            if (shouldOpen) {
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+            } else {
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                window.toggleOSDrawer(false);
+            }
+        });
+
+        fetchLeads();
+    </script>
+</body>
+</html>

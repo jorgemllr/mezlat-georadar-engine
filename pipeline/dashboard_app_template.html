@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>MESLATT // Allocation Dashboard Server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            boxShadow: {
+              'premium': '0 4px 20px -2px rgba(0, 0, 0, 0.03)',
+              'premium-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.3)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 2px; }
+        .interactive-element { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* ==================================================
+           GLOBAL OS DRAWER / SIDEBAR (SLIDE-OVER CYBERPUNK)
+           ================================================== */
+        .os-drawer-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 99990; opacity: 0; visibility: hidden;
+            transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.24s;
+        }
+        .os-drawer-overlay.active { opacity: 1; visibility: visible; }
+
+        .os-drawer {
+            position: fixed; top: 0; bottom: 0; left: 0;
+            width: 300px; max-width: 85vw;
+            background: #09090b;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 99999;
+            display: flex; flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Inter', sans-serif; color: #e4e4e7;
+        }
+        .os-drawer.active { transform: translateX(0); }
+
+        .os-drawer-header {
+            padding: 20px 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .os-brand-cluster { display: flex; align-items: center; gap: 12px; }
+        .os-brand-logo {
+            width: 32px; height: 32px; background: #ffffff; color: #09090b;
+            font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 4px; box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+        }
+        .os-brand-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 14px;
+            font-weight: 700; color: #ffffff; letter-spacing: 0.12em; line-height: 1.2;
+        }
+        .os-brand-title span { color: #3b82f6; font-weight: 800; }
+        .os-brand-subtitle {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px;
+            color: #71717a; letter-spacing: 0.15em; text-transform: uppercase;
+        }
+
+        .os-close-btn {
+            width: 28px; height: 28px; border-radius: 6px; background: transparent;
+            border: 1px solid transparent; color: #71717a;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.15s ease;
+        }
+        .os-close-btn:hover {
+            background: rgba(255, 255, 255, 0.06); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .os-drawer-body {
+            flex: 1; padding: 20px 14px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .os-nav-section-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px;
+            font-weight: 700; color: #52525b; letter-spacing: 0.2em; padding-left: 10px;
+        }
+        .os-nav-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .os-nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; border-radius: 8px; text-decoration: none;
+            color: #a1a1aa; background: transparent;
+            border: 1px solid transparent; transition: all 0.18s ease;
+        }
+        .os-nav-item:hover {
+            background: rgba(255, 255, 255, 0.04); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .os-nav-item.active {
+            background: rgba(255, 255, 255, 0.07); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .os-nav-icon {
+            width: 20px; height: 20px; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; color: #71717a; transition: color 0.18s ease;
+        }
+        .os-nav-item:hover .os-nav-icon, .os-nav-item.active .os-nav-icon { color: #ffffff; }
+        .os-nav-item.active .os-nav-icon { color: #3b82f6; }
+
+        .os-nav-meta { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .os-nav-name { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+        .os-nav-desc { font-size: 10px; color: #71717a; letter-spacing: -0.005em; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .os-nav-pill {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+            color: #52525b; background: rgba(255, 255, 255, 0.04);
+            padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .os-nav-item.active .os-nav-pill {
+            color: #3b82f6; border-color: rgba(59, 130, 246, 0.25); background: rgba(59, 130, 246, 0.1);
+        }
+
+        .os-drawer-footer {
+            padding: 16px 20px; border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; align-items: center; justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #71717a;
+        }
+        .os-status-indicator { display: flex; align-items: center; gap: 8px; }
+        .os-status-pulse {
+            width: 6px; height: 6px; background: #10b981; border-radius: 50%;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); animation: os-pulse 2s infinite;
+        }
+        @keyframes os-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+        .os-version-tag { font-size: 9px; color: #52525b; letter-spacing: 0.1em; }
+    </style>
+</head>
+<body class="bg-[#fafafa] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen flex flex-col">
+    <!-- GLOBAL OS BACKDROP OVERLAY -->
+    <div id="os-drawer-overlay" class="os-drawer-overlay" onclick="toggleOSDrawer(false)"></div>
+
+    <!-- GLOBAL OS SLIDE-OVER DRAWER -->
+    <aside id="os-drawer" class="os-drawer">
+        <div class="os-drawer-header">
+            <div class="os-brand-cluster">
+                <div class="os-brand-logo">M</div>
+                <div>
+                    <div class="os-brand-title">MESLATT <span>OS</span></div>
+                    <div class="os-brand-subtitle">SYSTEM // V4.2</div>
+                </div>
+            </div>
+            <button class="os-close-btn" onclick="toggleOSDrawer(false)" title="Close Menu (Esc)">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="os-drawer-body">
+            <div class="os-nav-section-title">CORE MODULES</div>
+            <nav class="os-nav-list">
+                <a href="/crm" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="5" height="18" rx="1.2"/>
+                            <rect x="10" y="3" width="5" height="11" rx="1.2"/>
+                            <rect x="17" y="3" width="5" height="15" rx="1.2"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Pipeline CRM</span>
+                        <span class="os-nav-desc">Lead Management & Funnel</span>
+                    </div>
+                    <div class="os-nav-pill">01</div>
+                </a>
+
+                <a href="/crm/map" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                            <polyline points="2 17 12 22 22 17"/>
+                            <polyline points="2 12 12 17 22 12"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Tactical Map</span>
+                        <span class="os-nav-desc">H3 Fog of War & Radar</span>
+                    </div>
+                    <div class="os-nav-pill">02</div>
+                </a>
+
+                <a href="/crm/dashboard" class="os-nav-item active">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18 17V9"/>
+                            <path d="M13 17V5"/>
+                            <path d="M8 17v-3"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Allocation Matrix</span>
+                        <span class="os-nav-desc">MCDA Pareto Budget</span>
+                    </div>
+                    <div class="os-nav-pill">03</div>
+                </a>
+                            <a href="/crm/queue" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="5" rx="1"/>
+                            <rect x="2" y="11" width="20" height="5" rx="1"/>
+                            <rect x="2" y="18" width="20" height="5" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Phase 2 Queue</span>
+                        <span class="os-nav-desc">Round-Robin API Budget</span>
+                    </div>
+                    <div class="os-nav-pill">04</div>
+                </a>
+            </nav>
+        </div>
+
+        <div class="os-drawer-footer">
+            <div class="os-status-indicator">
+                <span class="os-status-pulse"></span>
+                <span>SYSTEM ONLINE</span>
+            </div>
+            <div class="os-version-tag">PORT 5000</div>
+        </div>
+    </aside>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-zinc-200 dark:border-zinc-800 px-6 py-3 flex items-center justify-between transition-colors">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-3">
+                <button id="os-menu-trigger" onclick="toggleOSDrawer(true)" class="w-8 h-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold flex items-center justify-center text-sm font-mono rounded-[5px] shadow-sm hover:scale-105 active:scale-95 transition-all cursor-pointer select-none border border-zinc-200 dark:border-transparent" title="Open Navigation Menu">
+                    M
+                </button>
+                <h1 class="font-semibold tracking-tight text-zinc-900 dark:text-white text-lg hidden sm:block font-mono tracking-widest cursor-pointer" onclick="toggleOSDrawer(true)">MESLATT</h1>
+            </div>
+            <div class="h-4 w-px bg-zinc-300 dark:bg-zinc-800 hidden sm:block"></div>
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest hidden md:inline">Allocation Matrix V4</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="font-mono text-[9px] uppercase tracking-widest text-zinc-500 hidden sm:inline">MCDA · DENUE · PARETO</span>
+        </div>
+    </header>
+
+    <main class="flex-1 w-full p-6 flex flex-col gap-6 max-w-7xl mx-auto">
+        <!-- STATS ROW -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="stats-container">
+            <!-- Injected by JS -->
+        </section>
+
+        <!-- TABLE SECTION -->
+        <section class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-premium dark:shadow-premium-dark flex flex-col overflow-hidden">
+            <div class="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-medium text-zinc-900 dark:text-white tracking-tight">Evaluated Territories</h2>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Real-time allocation targets based on MCDA formulation.</p>
+                </div>
+                <div class="relative w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs"></i>
+                    <input type="text" id="city-search" placeholder="Search city or country..." class="w-full pl-8 pr-3 py-1.5 text-xs font-mono bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 dark:text-zinc-100 rounded focus:outline-none focus:border-blue-500 transition-colors">
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto relative">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="text-zinc-400 dark:text-zinc-500 text-[9px] uppercase tracking-widest font-mono border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+                        <tr>
+                            <th class="px-6 py-4 font-bold">#</th>
+                            <th class="px-6 py-4 font-bold">País</th>
+                            <th class="px-6 py-4 font-bold">Ciudad</th>
+                            <th class="px-6 py-4 font-bold">Tier</th>
+                            <th class="px-6 py-4 font-bold">DENUE Target</th>
+                            <th class="px-6 py-4 font-bold">Hofstede Score</th>
+                            <th class="px-6 py-4 font-bold">Weight (W_ij)</th>
+                            <th class="px-6 py-4 font-bold">Sondas (Max / Reales)</th>
+                            <th class="px-6 py-4 font-bold">Ph1 Calls</th>
+                            <th class="px-6 py-4 font-bold">Ph2 Calls</th>
+                            <th class="px-6 py-4 font-bold">Budget %</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cities-table-body" class="divide-y divide-zinc-50 dark:divide-zinc-800/50 text-zinc-700 dark:text-zinc-300">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let allCities = [];
+
+        const API_PREFIX = window.location.pathname.startsWith('/crm') ? '/crm' : '';
+
+        // Dynamic drawer links
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.os-nav-item');
+            if (navLinks.length >= 3) {
+                navLinks[0].href = API_PREFIX ? `${API_PREFIX}/` : '/';
+                navLinks[1].href = API_PREFIX ? `${API_PREFIX}/map` : '/map';
+                navLinks[2].href = API_PREFIX ? `${API_PREFIX}/dashboard` : '/dashboard';
+            }
+        });
+
+        async function fetchDashboardData() {
+            try {
+                const res = await fetch(`${API_PREFIX}/api/allocation_stats`);
+                const data = await res.json();
+                
+                renderStats(data);
+                allCities = data.budget.cities || [];
+                renderTable(allCities);
+                
+                document.getElementById('city-search').addEventListener('input', (e) => {
+                    const term = e.target.value.toLowerCase();
+                    const filtered = allCities.filter(c => c.city.toLowerCase().includes(term) || c.country.toLowerCase().includes(term));
+                    renderTable(filtered);
+                });
+            } catch (err) {
+                console.error("Error fetching dashboard data:", err);
+            }
+        }
+        
+        function renderStats(data) {
+            const container = document.getElementById('stats-container');
+            const state = data.state;
+            const budget = data.budget;
+            
+            const usedP1 = state.used?.phase1_calls || 0;
+            const limP1 = state.limits?.phase1_monthly || 10000;
+            const pctP1 = Math.min((usedP1 / limP1) * 100, 100).toFixed(2);
+            
+            const usedP2 = state.used?.phase2_calls || 0;
+            const limP2 = state.limits?.phase2_monthly || 5000;
+            const pctP2 = Math.min((usedP2 / limP2) * 100, 100).toFixed(2);
+            
+            const totalProj = budget.metadata?.budget_summary?.phase1_total_allocated || 9123;
+            const budgetMx = budget.metadata?.budget_summary?.probes_mexico || 0;
+            const budgetIntl = budget.metadata?.budget_summary?.probes_intl || 0;
+            const maxProbes = budget.metadata?.budget_summary?.max_probes_available || 3332;
+            
+            // Calculate actual total probes and hot leads
+            let actualProbes = 0;
+            let actualPhase2 = 0;
+            if (budget.cities) {
+                for (let c of budget.cities) {
+                    actualProbes += (c.actual_probes || 0);
+                    actualPhase2 += (c.phase2_calls || 0);
+                }
+            }
+
+            container.innerHTML = `
+                <!-- Phase 1 -->
+                <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-bold">Phase 1 (Nearby Search)</span>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-light tracking-tight text-zinc-900 dark:text-white font-mono">${usedP1} <span class="text-sm text-zinc-400">/ ${limP1}</span></h3>
+                        <div class="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-4 mb-2 overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: ${pctP1}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[9px] font-mono uppercase tracking-widest text-zinc-500">
+                            <span class="text-emerald-500 font-bold">Est: $${(usedP1 * 0.040).toFixed(2)} USD</span>
+                            <span>Limit: $400 USD</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-bold">Phase 2 (Place Details)</span>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-light tracking-tight text-zinc-900 dark:text-white font-mono">${usedP2} <span class="text-sm text-zinc-400">/ ${limP2}</span></h3>
+                        <div class="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-4 mb-2 overflow-hidden">
+                            <div class="bg-blue-500 h-full rounded-full" style="width: ${pctP2}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[9px] font-mono uppercase tracking-widest text-zinc-500">
+                            <span class="text-blue-500 font-bold">Est: $${(usedP2 * 0.038).toFixed(2)} USD</span>
+                            <span>Limit: $100 USD</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Global Probes -->
+                <div class="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-premium dark:shadow-premium-dark flex flex-col justify-between">
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest font-bold">Global Probes Deployed</span>
+                    </div>
+                    <div>
+                        <h3 class="text-3xl font-light tracking-tight text-zinc-900 dark:text-white font-mono">${actualProbes} <span class="text-sm text-zinc-400">/ ${maxProbes}</span></h3>
+                        <div class="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full mt-4 mb-2 overflow-hidden">
+                            <div class="bg-purple-500 h-full rounded-full" style="width: ${Math.min((actualProbes/maxProbes)*100, 100)}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[9px] font-mono uppercase tracking-widest text-zinc-500">
+                            <span class="text-purple-500 font-bold">Actual</span>
+                            <span>Planned (${budgetMx + budgetIntl})</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderTable(cities) {
+            const tbody = document.getElementById('cities-table-body');
+            tbody.innerHTML = '';
+            
+            cities.forEach((c, idx) => {
+                let tierBadge = '';
+                if (c.tier === 'S') tierBadge = '<span class="font-mono text-[9px] font-bold tracking-widest bg-yellow-500/10 text-yellow-500 border border-yellow-500/30 px-2 py-0.5 rounded">S</span>';
+                else if (c.tier === 'A') tierBadge = '<span class="font-mono text-[9px] font-bold tracking-widest bg-purple-500/10 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded">A</span>';
+                else if (c.tier === 'B') tierBadge = '<span class="font-mono text-[9px] font-bold tracking-widest bg-blue-500/10 text-blue-500 border border-blue-500/30 px-2 py-0.5 rounded">B</span>';
+                else tierBadge = '<span class="font-mono text-[9px] font-bold tracking-widest bg-zinc-500/10 text-zinc-400 border border-zinc-500/30 px-2 py-0.5 rounded">C</span>';
+                
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition-colors";
+                
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-mono text-[10px] text-zinc-500">#${idx+1}</td>
+                    <td class="px-6 py-4 text-xs text-zinc-400">${c.country}</td>
+                    <td class="px-6 py-4 font-bold text-zinc-900 dark:text-zinc-100">${c.city}</td>
+                    <td class="px-6 py-4">${tierBadge}</td>
+                    <td class="px-6 py-4">
+                        <span class="font-mono text-[9px] text-orange-500 bg-orange-500/10 border border-orange-500/30 px-2 py-0.5 rounded uppercase tracking-widest font-bold">${c.denue_target_count.toLocaleString()} DENUE</span>
+                    </td>
+                    <td class="px-6 py-4 font-mono text-[10px] text-zinc-400">${c.h_ij_score.toFixed(3)}</td>
+                    <td class="px-6 py-4 font-mono text-[10px] text-zinc-400">${c.final_weight.toFixed(3)}</td>
+                    <td class="px-6 py-4 font-mono text-[10px]"><span class="text-emerald-500 font-bold">${c.actual_probes || 0}</span> <span class="text-zinc-500">/ ${c.max_probes}</span></td>
+                    <td class="px-6 py-4 font-mono text-[10px] text-zinc-300">${c.actual_phase1_calls || 0}</td>
+                    <td class="px-6 py-4 font-mono text-[10px] text-zinc-300">${c.phase2_calls || 0}</td>
+                    <td class="px-6 py-4 font-mono text-[10px] text-zinc-300">${c.budget_percentage}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.toggleOSDrawer = function(open) {
+            const drawer = document.getElementById('os-drawer');
+            const overlay = document.getElementById('os-drawer-overlay');
+            if (!drawer || !overlay) return;
+            
+            const shouldOpen = (open !== undefined) ? open : !drawer.classList.contains('active');
+            if (shouldOpen) {
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+            } else {
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                window.toggleOSDrawer(false);
+            }
+        });
+
+        window.onload = fetchDashboardData;
+    </script>
+</body>
+</html>

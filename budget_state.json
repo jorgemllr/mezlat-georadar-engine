@@ -1,0 +1,17 @@
+{
+  "billing_month": "2026-08",
+  "limits": {
+    "phase1_monthly": 10000,
+    "phase2_monthly": 5000
+  },
+  "used": {
+    "phase1_calls": 714,
+    "phase2_calls": 29
+  },
+  "remaining": {
+    "phase1_calls": 9997,
+    "phase2_calls": 4976
+  },
+  "last_updated": "2026-08-14T15:51:58",
+  "notes": "Migrated from logs/api_spending_log.txt. Reset automatically at the start of each new billing month."
+}

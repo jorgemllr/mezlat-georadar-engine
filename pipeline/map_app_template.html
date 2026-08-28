@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>MESLATT V4 - Tactical Fog of War & Lead Inspector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/h3-js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #09090b; color: #e5e5e5; overflow: hidden; }
+        
+        /* ── MAP ──────────────────────────────────────────────────────────── */
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; height: 100vh; background: #09090b; }
+        
+        #map::after {
+            content: '';
+            position: absolute; inset: 0; pointer-events: none; z-index: 399;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        #map::before {
+            content: '';
+            position: absolute; inset: 0; pointer-events: none; z-index: 400;
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(9,9,11,0.85) 100%);
+        }
+        
+        /* ── SIDE PANEL ───────────────────────────────────────────────────── */
+        .side-panel {
+            position: absolute; top: 0; left: 0; z-index: 1000;
+            height: 100vh; width: 340px;
+            background: rgba(9, 9, 11, 0.85); backdrop-filter: blur(12px);
+            border-right: 1px solid #27272a;
+            display: flex; flex-direction: column;
+            overflow-y: auto;
+        }
+        /* Hide scrollbar for side panel */
+        .side-panel::-webkit-scrollbar { display: none; }
+        .side-panel { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .sp-header {
+            padding: 24px;
+            border-bottom: 1px solid #27272a;
+            background: rgba(9, 9, 11, 0.95);
+        }
+        .sp-brand {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 6px;
+        }
+        .sp-hex {
+            width: 24px; height: 24px;
+            background: #ffffff; color: #18181b; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px; border-radius: 4px;
+        }
+        .sp-title {
+            font-size: 16px; font-weight: 600;
+            letter-spacing: -0.02em; color: #ffffff;
+        }
+        .sp-sub {
+            font-size: 10px; color: #71717a;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.1em; text-transform: uppercase;
+        }
+
+        /* Controls Section */
+        .sp-controls {
+            padding: 24px;
+            border-bottom: 1px solid #27272a;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .sp-control-lbl {
+            font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em;
+            color: #71717a; font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 6px; font-weight: 600;
+        }
+        .sp-input, .sp-select {
+            width: 100%; padding: 8px 12px; background: rgba(24, 24, 27, 0.5); color: #f4f4f5;
+            border: 1px solid #3f3f46; border-radius: 6px;
+            font-family: 'Inter', sans-serif; font-size: 12px;
+            outline: none; transition: all 0.2s;
+        }
+        .sp-input:focus, .sp-select:focus { border-color: #f4f4f5; background: rgba(24, 24, 27, 0.8); }
+        
+        .sp-metrics {
+            padding: 24px;
+            border-bottom: 1px solid #27272a;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+        }
+        .sp-metric-lbl {
+            font-size: 9px; text-transform: uppercase;
+            letter-spacing: 0.15em; color: #71717a;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 8px; font-weight: 600;
+        }
+        .sp-metric-val {
+            font-size: 28px; font-weight: 300; color: #ffffff;
+            font-family: 'Inter', sans-serif; letter-spacing: -0.02em;
+        }
+
+        .sp-legend {
+            padding: 24px;
+            flex: 1;
+        }
+        .sp-legend-title {
+            font-size: 9px; font-weight: 600; color: #a1a1aa;
+            text-transform: uppercase; letter-spacing: 0.15em;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 20px;
+        }
+        .sp-legend ul { list-style: none; padding: 0; margin: 0; }
+        .sp-legend li {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 14px;
+            font-size: 11px; color: #d4d4d8;
+            font-family: 'Inter', sans-serif;
+        }
+        .sp-legend li.divider {
+            padding-top: 14px; margin-top: 4px;
+            border-top: 1px solid #27272a;
+        }
+        .ld-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .ld-ring {
+            width: 14px; height: 14px; border-radius: 50%;
+            border: 1px solid #10b981;
+            background: rgba(16,185,129,0.08);
+            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .ld-ring-inner { width: 4px; height: 4px; border-radius: 50%; background: #10b981; }
+        .sp-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #27272a;
+            font-size: 10px; font-family: 'Inter', sans-serif;
+            color: #71717a; text-align: center; background: rgba(9, 9, 11, 0.95);
+        }
+        
+        /* ── LEAFLET POPUP & CARDS ────────────────────────────────────────── */
+        .leaflet-popup-content-wrapper {
+            background: #18181b !important;
+            border: 1px solid #27272a !important;
+            color: #f4f4f5 !important;
+            border-radius: 12px !important;
+            padding: 0 !important;
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3) !important;
+            overflow: hidden;
+        }
+        .leaflet-popup-tip-container { display: none !important; }
+        .leaflet-popup-content { margin: 0 !important; width: 320px !important; }
+        
+        .lead-card { width: 100%; font-family: 'Inter', sans-serif; }
+        .lead-card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 16px; border-bottom: 1px solid #27272a; background: #09090b;
+        }
+        .lead-card-ref {
+            font-size: 9px; font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase; letter-spacing: 0.1em; color: #a1a1aa;
+            display: flex; align-items: center; gap: 8px; font-weight: 600;
+        }
+        .ref-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; }
+        .ref-dot.hot { background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+        .lead-badge {
+            font-size: 9px; font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            padding: 4px 8px; border-radius: 4px; font-weight: 700;
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #10b981; background: rgba(16,185,129,0.1);
+        }
+        .hide-labels .probe-count-label { display: none !important; }
+        
+        .lead-card-body { padding: 16px; }
+        .lead-card h3 {
+            margin: 0 0 12px 0; font-size: 16px; font-weight: 600;
+            color: #ffffff; line-height: 1.3;
+        }
+        
+        .carousel-box { position: relative; margin: 0 0 16px 0; overflow: hidden; border: 1px solid #27272a; border-radius: 8px; }
+        .carousel-img { width: 100%; height: 160px; object-fit: cover; display: block; filter: brightness(0.9); }
+        .carousel-bar {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px; background: rgba(9,9,11,0.85); backdrop-filter: blur(4px);
+        }
+        .carousel-btn {
+            background: transparent; color: #ffffff; border: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 0.1em; font-weight: 700;
+            cursor: pointer; transition: color 0.2s;
+        }
+        .carousel-btn:hover { color: #10b981; }
+        .carousel-count { font-size: 9px; font-family: 'JetBrains Mono', monospace; color: #a1a1aa; }
+        
+        .lead-data-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 1px; background: #27272a;
+            border: 1px solid #27272a; border-radius: 8px; overflow: hidden; margin-bottom: 16px;
+        }
+        .lead-data-cell { background: #18181b; padding: 10px 12px; }
+        .lead-data-cell.full { grid-column: 1 / -1; }
+        .data-lbl {
+            font-size: 8px; text-transform: uppercase;
+            letter-spacing: 0.15em; color: #71717a;
+            font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; font-weight: 600;
+        }
+        .data-val { font-size: 12px; font-family: 'Inter', sans-serif; color: #e4e4e7; word-break: break-all; }
+        
+        .lead-actions { display: flex; gap: 8px; }
+        .btn-action {
+            flex: 1; text-align: center; padding: 10px 0; border-radius: 6px;
+            font-size: 10px; font-family: 'JetBrains Mono', monospace;
+            font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+            text-decoration: none; display: inline-block;
+            transition: all 0.2s ease; cursor: pointer; border: none;
+        }
+        .btn-wa { background: #ffffff; color: #09090b !important; }
+        .btn-wa:hover { background: #e4e4e7; }
+        .btn-maps { background: #27272a; color: #ffffff !important; border: 1px solid #3f3f46 !important; }
+        .btn-maps:hover { background: #3f3f46; }
+
+        .probe-count-label {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+        .probe-inner-id { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; line-height: 1; color: rgba(255,255,255,0.7); }
+        .probe-biz-count {
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+            color: #10b981; text-shadow: 0 0 6px rgba(16,185,129,0.5);
+            margin-top: 4px; white-space: nowrap;
+        }
+    </style>
+
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            boxShadow: {
+              'premium': '0 4px 20px -2px rgba(0, 0, 0, 0.03)',
+              'premium-dark': '0 4px 20px -2px rgba(0, 0, 0, 0.3)',
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+        /* ==================================================
+           GLOBAL OS DRAWER / SIDEBAR (SLIDE-OVER CYBERPUNK)
+           ================================================== */
+        .os-drawer-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 99990; opacity: 0; visibility: hidden;
+            transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.24s;
+        }
+        .os-drawer-overlay.active { opacity: 1; visibility: visible; }
+
+        .os-drawer {
+            position: fixed; top: 0; bottom: 0; left: 0;
+            width: 300px; max-width: 85vw;
+            background: #09090b;
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+            z-index: 99999;
+            display: flex; flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            font-family: 'Inter', sans-serif; color: #e4e4e7;
+        }
+        .os-drawer.active { transform: translateX(0); }
+
+        .os-drawer-header {
+            padding: 20px 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .os-brand-cluster { display: flex; align-items: center; gap: 12px; }
+        .os-brand-logo {
+            width: 32px; height: 32px; background: #ffffff; color: #09090b;
+            font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 4px; box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+        }
+        .os-brand-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 14px;
+            font-weight: 700; color: #ffffff; letter-spacing: 0.12em; line-height: 1.2;
+        }
+        .os-brand-title span { color: #3b82f6; font-weight: 800; }
+        .os-brand-subtitle {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px;
+            color: #71717a; letter-spacing: 0.15em; text-transform: uppercase;
+        }
+
+        .os-close-btn {
+            width: 28px; height: 28px; border-radius: 6px; background: transparent;
+            border: 1px solid transparent; color: #71717a;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.15s ease;
+        }
+        .os-close-btn:hover {
+            background: rgba(255, 255, 255, 0.06); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .os-drawer-body {
+            flex: 1; padding: 20px 14px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .os-nav-section-title {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px;
+            font-weight: 700; color: #52525b; letter-spacing: 0.2em; padding-left: 10px;
+        }
+        .os-nav-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .os-nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 12px; border-radius: 8px; text-decoration: none;
+            color: #a1a1aa; background: transparent;
+            border: 1px solid transparent; transition: all 0.18s ease;
+        }
+        .os-nav-item:hover {
+            background: rgba(255, 255, 255, 0.04); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .os-nav-item.active {
+            background: rgba(255, 255, 255, 0.07); color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .os-nav-icon {
+            width: 20px; height: 20px; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; color: #71717a; transition: color 0.18s ease;
+        }
+        .os-nav-item:hover .os-nav-icon, .os-nav-item.active .os-nav-icon { color: #ffffff; }
+        .os-nav-item.active .os-nav-icon { color: #3b82f6; }
+
+        .os-nav-meta { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .os-nav-name { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+        .os-nav-desc { font-size: 10px; color: #71717a; letter-spacing: -0.005em; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .os-nav-pill {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+            color: #52525b; background: rgba(255, 255, 255, 0.04);
+            padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .os-nav-item.active .os-nav-pill {
+            color: #3b82f6; border-color: rgba(59, 130, 246, 0.25); background: rgba(59, 130, 246, 0.1);
+        }
+
+        .os-drawer-footer {
+            padding: 16px 20px; border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; align-items: center; justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #71717a;
+        }
+        .os-status-indicator { display: flex; align-items: center; gap: 8px; }
+        .os-status-pulse {
+            width: 6px; height: 6px; background: #10b981; border-radius: 50%;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.6); animation: os-pulse 2s infinite;
+        }
+        @keyframes os-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+        .os-version-tag { font-size: 9px; color: #52525b; letter-spacing: 0.1em; }
+    </style>
+
+</head>
+<body>
+    <!-- GLOBAL OS BACKDROP OVERLAY -->
+    <div id="os-drawer-overlay" class="os-drawer-overlay" onclick="toggleOSDrawer(false)"></div>
+
+    <!-- GLOBAL OS SLIDE-OVER DRAWER -->
+    <aside id="os-drawer" class="os-drawer">
+        <div class="os-drawer-header">
+            <div class="os-brand-cluster">
+                <div class="os-brand-logo">M</div>
+                <div>
+                    <div class="os-brand-title">MESLATT <span>OS</span></div>
+                    <div class="os-brand-subtitle">SYSTEM // V4.2</div>
+                </div>
+            </div>
+            <button class="os-close-btn" onclick="toggleOSDrawer(false)" title="Close Menu (Esc)">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="os-drawer-body">
+            <div class="os-nav-section-title">CORE MODULES</div>
+            <nav class="os-nav-list">
+                <a href="/crm" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="5" height="18" rx="1.2"/>
+                            <rect x="10" y="3" width="5" height="11" rx="1.2"/>
+                            <rect x="17" y="3" width="5" height="15" rx="1.2"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Pipeline CRM</span>
+                        <span class="os-nav-desc">Lead Management & Funnel</span>
+                    </div>
+                    <div class="os-nav-pill">01</div>
+                </a>
+
+                <a href="/crm/map" class="os-nav-item active">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                            <polyline points="2 17 12 22 22 17"/>
+                            <polyline points="2 12 12 17 22 12"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Tactical Map</span>
+                        <span class="os-nav-desc">H3 Fog of War & Radar</span>
+                    </div>
+                    <div class="os-nav-pill">02</div>
+                </a>
+
+                <a href="/crm/dashboard" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3v18h18"/>
+                            <path d="M18 17V9"/>
+                            <path d="M13 17V5"/>
+                            <path d="M8 17v-3"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Allocation Matrix</span>
+                        <span class="os-nav-desc">MCDA Pareto Budget</span>
+                    </div>
+                    <div class="os-nav-pill">03</div>
+                </a>
+                            <a href="/crm/queue" class="os-nav-item">
+                    <div class="os-nav-icon">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="4" width="20" height="5" rx="1"/>
+                            <rect x="2" y="11" width="20" height="5" rx="1"/>
+                            <rect x="2" y="18" width="20" height="5" rx="1"/>
+                        </svg>
+                    </div>
+                    <div class="os-nav-meta">
+                        <span class="os-nav-name">Phase 2 Queue</span>
+                        <span class="os-nav-desc">Round-Robin API Budget</span>
+                    </div>
+                    <div class="os-nav-pill">04</div>
+                </a>
+            </nav>
+        </div>
+
+        <div class="os-drawer-footer">
+            <div class="os-status-indicator">
+                <span class="os-status-pulse"></span>
+                <span>SYSTEM ONLINE</span>
+            </div>
+            <div class="os-version-tag">PORT 5000</div>
+        </div>
+    </aside>
+
+    <div id="map"></div>
+
+    <!-- ── SIDE PANEL ─────────────────────────────────────────────────── -->
+    <div class="side-panel">
+        <div class="sp-header">
+            <div class="sp-brand">
+                <button id="os-menu-trigger" onclick="toggleOSDrawer(true)" class="sp-hex hover:scale-105 active:scale-95 transition-all" style="cursor: pointer; border: none; outline: none;" title="Open Navigation Menu">M</button>
+                <div class="sp-title cursor-pointer" onclick="toggleOSDrawer(true)">MESLATT</div>
+            </div>
+            <div class="sp-sub">Tactical Intelligence Grid</div>
+        </div>
+        <div class="sp-controls">
+            <div>
+                <div class="sp-control-lbl">Search Business / Address</div>
+                <input type="text" id="search-input" class="sp-input" placeholder="FILTER BY NAME..." oninput="filterLeads()">
+            </div>
+            <div>
+                <div class="sp-control-lbl">Lead Status</div>
+                <select id="filter-status" class="sp-select" onchange="filterLeads()">
+                    <option value="all">ALL LEADS</option>
+                    <option value="hot" selected>HOT LEADS ONLY</option>
+                    <option value="phase2">PHASE 2 ENRICHED (CDN)</option>
+                    <option value="standard">STANDARD PROSPECTS</option>
+                </select>
+            </div>
+            <div>
+                <div class="sp-control-lbl">City Filter</div>
+                <select id="filter-city" class="sp-select" onchange="filterLeads()">
+                    <option value="all">ALL CITIES</option>
+                </select>
+            </div>
+            <div>
+                <div class="sp-control-lbl">Niche / Industry</div>
+                <select id="filter-niche" class="sp-select" onchange="filterLeads()">
+                    <option value="all">ALL CATEGORIES</option>
+                </select>
+            </div>
+            <div>
+                <div class="sp-control-lbl">Priority Tier</div>
+                <select id="filter-tier" class="sp-select" onchange="filterLeads()">
+                    <option value="all">ALL TIERS</option>
+                    <option value="3">TIER 3 (ENTERPRISE VIP)</option>
+                    <option value="2">TIER 2 (GROWTH)</option>
+                    <option value="1">TIER 1 (STARTER)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="sp-metrics">
+            <div>
+                <div class="sp-metric-lbl">Rendered Leads</div>
+                <div class="sp-metric-val" id="metric-rendered">0</div>
+            </div>
+            <div>
+                <div class="sp-metric-lbl">Hot Leads (Total)</div>
+                <div class="sp-metric-val" id="metric-hot-total" style="color: #3b82f6;">0</div>
+            </div>
+        </div>
+
+        <div class="sp-legend">
+            <div class="sp-legend-title">Node Classification</div>
+            <ul>
+                <li>
+                    <div class="ld-dot" style="background:#d946ef;box-shadow:0 0 8px rgba(217,70,239,0.8);"></div>
+                    PHASE 2 ENRICHED (CDN)
+                </li>
+                <li>
+                    <div class="ld-dot" style="background:#00e1ff;box-shadow:0 0 8px rgba(0,225,255,0.8);"></div>
+                    QUALIFIED HOT LEAD
+                </li>
+                <li>
+                    <div class="ld-dot" style="background:#ffffff;box-shadow:0 0 6px rgba(255,255,255,0.6);"></div>
+                    STANDARD PROSPECT
+                </li>
+                <li>
+                    <div class="ld-dot" style="background:#ffea00;box-shadow:0 0 8px rgba(255,234,0,0.8);"></div>
+                    SCANNED PROBE
+                </li>
+                <li>
+                    <div class="ld-dot" style="background:#ff0055;box-shadow:0 0 8px rgba(255,0,85,0.8);"></div>
+                    PENDING RADAR PROBE
+                </li>
+                <li class="divider">
+                    <div class="ld-ring"><div class="ld-ring-inner"></div></div>
+                    INEGI DENSITY HEXAGON
+                </li>
+            </ul>
+        </div>
+
+        <div class="sp-footer">PIPELINE V4 // SECURE CONNECTION</div>
+    </div>
+
+    <script>
+        var map = L.map('map', {
+            preferCanvas: true,
+            zoomControl: false,
+            worldCopyJump: true
+        }).setView([20.5888, -100.3899], 12);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        let clustersData = {};
+        let leadsData = {};
+        let scannedProbes = [];
+        const leadsLayerGroup = L.layerGroup().addTo(map);
+
+        // Global Photo Carousel
+        window.photoIndices = {};
+        window.changeLeadPhoto = function(pid, direction) {
+            const lead = leadsData[pid];
+            if (!lead || !lead.photos || lead.photos.length === 0) return;
+            if (window.photoIndices[pid] === undefined) window.photoIndices[pid] = 0;
+            
+            window.photoIndices[pid] = (window.photoIndices[pid] + direction + lead.photos.length) % lead.photos.length;
+            const idx = window.photoIndices[pid];
+            
+            const imgEl = document.getElementById('img_' + pid);
+            const countEl = document.getElementById('cnt_' + pid);
+            if (imgEl) imgEl.src = lead.photos[idx];
+            if (countEl) countEl.innerText = (idx + 1) + ' / ' + lead.photos.length;
+        };
+
+        function populateDropdowns() {
+            const citySet = new Set();
+            const nicheSet = new Set();
+
+            Object.keys(clustersData).forEach(c => citySet.add(c));
+            Object.values(leadsData).forEach(lead => {
+                if (lead.primary_type) nicheSet.add(lead.primary_type);
+            });
+
+            const citySelect = document.getElementById('filter-city');
+            citySelect.innerHTML = '<option value="all">ALL CITIES</option>';
+            Array.from(citySet).sort().forEach(city => {
+                const opt = document.createElement('option');
+                opt.value = city.toLowerCase();
+                opt.innerText = city.toUpperCase();
+                citySelect.appendChild(opt);
+            });
+
+            const nicheSelect = document.getElementById('filter-niche');
+            nicheSelect.innerHTML = '<option value="all">ALL CATEGORIES</option>';
+            Array.from(nicheSet).sort().forEach(niche => {
+                const opt = document.createElement('option');
+                opt.value = niche.toLowerCase();
+                opt.innerText = niche.replace(/_/g, ' ').toUpperCase();
+                nicheSelect.appendChild(opt);
+            });
+        }
+
+        // 1. Render Commercial Clusters
+        function renderCommercialClusters() {
+            Object.keys(clustersData).forEach(city => {
+                const cData = clustersData[city];
+                const allClusters = cData.all_clusters || [];
+
+                allClusters.forEach(cl => {
+                    if (cl.boundary) {
+                        const count = cl.establishment_count || 1;
+                        const fillOp = Math.min(0.85, Math.max(0.10, count / 80));
+                        const breakdown = cl.niche_breakdown || {};
+                        const batches = cl.active_batches || [];
+                        const nicheKeys = Object.keys(breakdown).sort((a, b) => breakdown[b] - breakdown[a]);
+                        let nicheRowsHtml = '';
+                        if (nicheKeys.length > 0) {
+                            nicheRowsHtml = '<div style="margin-top:6px;font-size:11px;line-height:1.8;">' +
+                                nicheKeys.map(n => `<span style="color:#065f46;font-weight:600;">${n.replace(/_/g,' ')}</span><span style="color:#111827;">: ${breakdown[n]}</span><br>`).join('') +
+                                '</div>' + `<div style="margin-top:4px;font-size:10px;color:#5b21b6;">API Batches: [${batches.join(', ')}]</div>`;
+                        }
+
+                        L.polygon(cl.boundary, {
+                            color: cl.phase2_done ? 'rgba(249,115,22,0.8)' : cl.phase1_done ? 'rgba(234,179,8,0.7)' : 'rgba(16,185,129,0.55)',
+                            fillColor: '#10b981',
+                            fillOpacity: fillOp,
+                            weight: 1.5,
+                            interactive: true
+                        }).bindTooltip(
+                            '<div style="min-width:190px;max-width:260px;">' +
+                            `<b style="font-size:12px;color:#111827;">${cl.city} — H3 Cluster</b><br>` +
+                            `<code style="background:#eee;color:#e74c3c;padding:2px;border-radius:3px;font-size:11px;">ID: ${cl.h3_index}</code><br>` +
+                            `<span style="color:#374151;">Total businesses: </span><b style="color:#111827;">${cl.establishment_count}</b>` +
+                            nicheRowsHtml + '</div>',
+                            {sticky: true, maxWidth: 280}
+                        ).addTo(map);
+                    } else {
+                        const radius = Math.min(1500, Math.max(300, cl.establishment_count * 12));
+                        L.circle([cl.centroid_lat, cl.centroid_lng], {
+                            color: cl.phase2_done ? 'rgba(249,115,22,0.8)' : cl.phase1_done ? 'rgba(234,179,8,0.7)' : 'rgba(16,185,129,0.55)',
+                            fillColor: 'rgba(16,185,129,0.08)',
+                            fillOpacity: 1,
+                            weight: 1.5,
+                            radius: radius,
+                            interactive: false
+                        }).bindTooltip(`<b>${cl.city} — Cluster</b><br>Businesses: ${cl.establishment_count}`).addTo(map);
+                    }
+                });
+            });
+        }
+
+        // 2. Render Radar Probes
+        function renderRadarProbes() {
+            Object.keys(clustersData).forEach(city => {
+                const cData = clustersData[city];
+                const probes = cData.radar_probes || [];
+
+                probes.forEach((p, i) => {
+                    const probeId = city + '_' + p.centroid_lat + '_' + p.centroid_lng;
+                    const isScanned = scannedProbes.includes(probeId);
+                    const probeDotClr = isScanned ? '#ffea00' : '#ff0055';
+                    const lblStatus = isScanned ? '(Scanned)' : '(Pending)';
+                    const txtColor = isScanned ? '#000000' : '#ffffff';
+
+                    L.marker([p.centroid_lat, p.centroid_lng], {
+                        icon: L.divIcon({
+                            className: 'probe-count-label',
+                            html: `<div class="probe-inner-id" style="color: ${txtColor};">${i+1}</div><div class="probe-biz-count">${p.establishment_count} biz</div>`,
+                            iconSize: [60, 40],
+                            iconAnchor: [30, 20]
+                        }),
+                        interactive: false
+                    }).addTo(map);
+                    
+                    L.circleMarker([p.centroid_lat, p.centroid_lng], {
+                        radius: isScanned ? 8 : 6,
+                        color: isScanned ? '#000000' : '#ffffff',
+                        weight: 1.5,
+                        fillColor: probeDotClr,
+                        fillOpacity: 0.9,
+                        interactive: true
+                    }).bindTooltip(`
+                        <div style="text-align:center;">
+                            <b style="color:${probeDotClr}">Probe #${i+1} (${city})</b><br>
+                            ${p.establishment_count} businesses detected<br>
+                            <span style="color:#a3a3a3;font-size:10px;">${lblStatus}</span>
+                        </div>
+                    `, {direction: 'top'}).addTo(map);
+                });
+            });
+        }
+
+        // 3. Multi-Filter Leads Rendering
+        window.filterLeads = function() {
+            leadsLayerGroup.clearLayers();
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('filter-status').value;
+            const cityFilter = document.getElementById('filter-city').value;
+            const nicheFilter = document.getElementById('filter-niche').value;
+            const tierFilter = document.getElementById('filter-tier').value;
+
+            let renderedCount = 0;
+
+            Object.keys(leadsData).forEach(pid => {
+                const lead = leadsData[pid];
+                const name = (lead.business_name || "").toLowerCase();
+                const address = (lead.address || "").toLowerCase();
+                const pType = (lead.primary_type || "").toLowerCase();
+                const isHot = !!lead.is_hot_lead;
+                const isP2 = !!lead.phase2_done;
+                const tier = String(lead.target_tier || lead.hot_lead_tier || 0);
+
+                // Text search
+                if (query !== "" && !name.includes(query) && !address.includes(query)) return;
+
+                // Status filter
+                if (statusFilter === 'hot' && !isHot) return;
+                if (statusFilter === 'phase2' && !isP2) return;
+                if (statusFilter === 'standard' && isHot) return;
+
+                // City filter
+                if (cityFilter !== 'all' && !address.includes(cityFilter)) return;
+
+                // Niche filter
+                if (nicheFilter !== 'all' && pType !== nicheFilter) return;
+
+                // Tier filter
+                if (tierFilter !== 'all' && tier !== tierFilter) return;
+
+                if (lead.lat && lead.lng) {
+                    renderedCount++;
+                    const photos = (lead.photos && lead.photos.length > 0) ? lead.photos : ['https://via.placeholder.com/800x400/0a0a0a/3b82f6?text=PHOTO+PENDING'];
+                    const primaryImg = photos[0];
+                    const badgeText = isP2 ? 'PHASE 2 ENRICHED' : isHot ? `HOT LEAD (T${lead.target_tier || lead.hot_lead_tier || 1})` : 'STANDARD';
+                    const refDotClass = isHot ? 'hot' : '';
+
+                    const carouselHtml = (isHot || isP2) ? `
+                        <div class="carousel-box">
+                            <img id="img_${pid}" src="${primaryImg}" class="carousel-img" alt="Commercial Photo"/>
+                            <div class="carousel-bar">
+                                <button class="carousel-btn" onclick="window.changeLeadPhoto('${pid}', -1)">◄ PREV</button>
+                                <span id="cnt_${pid}" class="carousel-count">${photos.length > 1 ? '1 / ' + photos.length : '1 / 1'}</span>
+                                <button class="carousel-btn" onclick="window.changeLeadPhoto('${pid}', 1)">NEXT ►</button>
+                            </div>
+                        </div>
+                    ` : '';
+
+                    const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+                    const waUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=Hello,%20I%20saw%20your%20business%20on%20Google%20Maps`;
+                    const mapsUrl = lead.google_maps_url || `https://www.google.com/maps/search/?api=1&query=${lead.lat},${lead.lng}`;
+                    const shortId = pid.substring(0, 8).toUpperCase();
+
+                    const popupHtml = `
+                        <div class="lead-card">
+                            <div class="lead-card-header">
+                                <div class="lead-card-ref">
+                                    <div class="ref-dot ${refDotClass}"></div>
+                                    REF: ${shortId}
+                                </div>
+                                <span class="lead-badge">${badgeText}</span>
+                            </div>
+                            <div class="lead-card-body">
+                                <h3>${lead.business_name}</h3>
+                                <div style='margin-bottom:10px;'><span style='background:#3b82f6;color:white;padding:3px 8px;border-radius:4px;font-size:10px;text-transform:uppercase;font-weight:bold;letter-spacing:1px;'>${lead.primary_type || 'BUSINESS'}</span></div>
+                                ${carouselHtml}
+                                <div class="lead-data-grid">
+                                    <div class="lead-data-cell">
+                                        <div class="data-lbl">Rating</div>
+                                        <div class="data-val">${lead.rating || 'N/A'} ★ (${lead.reviews_count || 0})</div>
+                                    </div>
+                                    <div class="lead-data-cell">
+                                        <div class="data-lbl">Phone</div>
+                                        <div class="data-val">+${cleanPhone || '—'}</div>
+                                    </div>
+                                    <div class="lead-data-cell">
+                                        <div class="data-lbl">Score</div>
+                                        <div class="data-val" style="color:#10b981;">${lead.phase2_score || 0.0} pts</div>
+                                    </div>
+                                    <div class="lead-data-cell">
+                                        <div class="data-lbl">Price</div>
+                                        <div class="data-val" style="color:#f59e0b;">${ lead.price_level === 'PRICE_LEVEL_INEXPENSIVE' ? '$' : lead.price_level === 'PRICE_LEVEL_MODERATE' ? '$$' : lead.price_level === 'PRICE_LEVEL_EXPENSIVE' ? '$$$' : lead.price_level === 'PRICE_LEVEL_VERY_EXPENSIVE' ? '$$$$' : '—' }</div>
+                                    </div>
+                                    <div class="lead-data-cell full">
+                                        <div class="data-lbl">Address</div>
+                                        <div class="data-val">${lead.address || 'Pending Phase 2'}</div>
+                                    </div>
+                                </div>
+                                <div class="lead-actions">
+                                    <a href="${waUrl}" target="_blank" class="btn-action btn-wa">WhatsApp</a>
+                                    <a href="${mapsUrl}" target="_blank" class="btn-action btn-maps">Maps</a>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    let dotColor = '#ffffff';
+                    let dotBorder = '#52525b';
+                    let dotSize = 4;
+                    let opac = 0.4;
+                    let weight = 1;
+
+                    if (isP2) {
+                        dotColor = '#a855f7';
+                        dotBorder = '#3b0764';
+                        dotSize = 9;
+                        opac = 1.0;
+                        weight = 2;
+                    } else if (isHot) {
+                        dotColor = '#38bdf8';
+                        dotBorder = '#0c4a6e';
+                        dotSize = 6;
+                        opac = 0.9;
+                        weight = 1.5;
+                    }
+
+                    L.circleMarker([lead.lat, lead.lng], {
+                        radius: dotSize,
+                        color: dotBorder,
+                        fillColor: dotColor,
+                        fillOpacity: opac,
+                        weight: weight
+                    }).bindPopup(popupHtml, {maxWidth: 340}).addTo(leadsLayerGroup);
+                }
+            });
+
+            document.getElementById('metric-rendered').innerText = renderedCount;
+        };
+
+        const API_PREFIX = window.location.pathname.startsWith('/crm') ? '/crm' : '';
+
+        // Dynamic drawer links
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.os-nav-item');
+            if (navLinks.length >= 3) {
+                navLinks[0].href = API_PREFIX ? `${API_PREFIX}/` : '/';
+                navLinks[1].href = API_PREFIX ? `${API_PREFIX}/map` : '/map';
+                navLinks[2].href = API_PREFIX ? `${API_PREFIX}/dashboard` : '/dashboard';
+            }
+        });
+
+        async function initMapData() {
+            try {
+                const [resLeads, resClusters] = await Promise.all([
+                    fetch(`${API_PREFIX}/api/leads`),
+                    fetch(`${API_PREFIX}/api/clusters`)
+                ]);
+                
+                const leadsArr = await resLeads.json();
+                leadsData = {};
+                leadsArr.forEach(l => { leadsData[l.place_id] = l; });
+                
+                const clustersPayload = await resClusters.json();
+                clustersData = clustersPayload.clusters || {};
+                scannedProbes = clustersPayload.scanned_probes || [];
+                
+                populateDropdowns();
+                renderCommercialClusters();
+                renderRadarProbes();
+                filterLeads();
+                
+                const hotCount = Object.values(leadsData).filter(l => l.is_hot_lead).length;
+                document.getElementById('metric-hot-total').innerText = hotCount;
+                
+            } catch (err) {
+                console.error("Error loading map data", err);
+            }
+        }
+
+        window.toggleOSDrawer = function(open) {
+            const drawer = document.getElementById('os-drawer');
+            const overlay = document.getElementById('os-drawer-overlay');
+            if (!drawer || !overlay) return;
+            
+            const shouldOpen = (open !== undefined) ? open : !drawer.classList.contains('active');
+            if (shouldOpen) {
+                drawer.classList.add('active');
+                overlay.classList.add('active');
+            } else {
+                drawer.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        };
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                window.toggleOSDrawer(false);
+            }
+        });
+
+        initMapData();
+
+        map.on('zoomend', function() {
+            if (map.getZoom() < 14) {
+                document.getElementById('map').classList.add('hide-labels');
+            } else {
+                document.getElementById('map').classList.remove('hide-labels');
+            }
+        });
+        map.fire('zoomend');
+    </script>
+</body>
+</html>
