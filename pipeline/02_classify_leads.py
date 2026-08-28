@@ -183,9 +183,8 @@ def run_cli():
     print(f"  ├─ TIER 2 (Growth):         {t2_count}")
     print(f"  └─ TIER 1 (Starter):        {t1_count}")
     print("=" * 45)
-
-    trigger_ui_updates(update_dashboard=False, update_fog_map=True, update_crm=True)
-    print("\n✅ Classification complete. DB updated and UI regenerated.")
+    print("\n✅ Classification complete. Database updated successfully.")
+    print("✨ Dynamic CRM and Tactical Map reflect new tiers live on crm_server.py")
 
 if __name__ == "__main__":
     run_cli()

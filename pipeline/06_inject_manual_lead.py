@@ -92,8 +92,7 @@ def run_cli():
     all_leads[place_id] = new_lead
     
     save_processed_leads(all_leads)
-    trigger_ui_updates(update_dashboard=False, update_fog_map=True, update_crm=True)
-    print("✅ Database updated and UI regenerated.")
+    print("✅ Database updated successfully. Dynamic CRM and Map reflect change live on crm_server.py")
 
 if __name__ == "__main__":
     run_cli()

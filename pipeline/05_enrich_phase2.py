@@ -265,9 +265,7 @@ def run_cli():
                 break
 
     print(f"\n🎉 Phase 2 Complete! Enriched {enriched_count} leads with photos, reviews, and detailed metadata.")
-
-    # Update visualizers
-    trigger_ui_updates(update_dashboard=True, update_fog_map=True, update_crm=True)
+    print("✨ Dynamic CRM and Tactical Map reflect enriched details live on crm_server.py")
 
 if __name__ == "__main__":
     run_cli()

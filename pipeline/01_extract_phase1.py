@@ -314,9 +314,7 @@ def run_cli():
             break
 
     print(f"\n🎉 Phase 1 Extraction Complete! Captured {total_new_leads} new prospects ({len(all_leads)} total in database).")
-    
-    # Auto-synchronize maps and budget dashboard
-    trigger_ui_updates(update_dashboard=True, update_fog_map=True, update_crm=False)
+    print("✨ Dynamic CRM and Tactical Map are live and immediately available via crm_server.py")
 
 if __name__ == "__main__":
     run_cli()

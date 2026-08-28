@@ -201,32 +201,5 @@ def resolve_photo_cdn_url(photo_name: str) -> str | None:
 # ── UI Synchronization Hooks ──────────────────────────────────────────────────
 
 def trigger_ui_updates(update_dashboard: bool = True, update_fog_map: bool = True, update_crm: bool = True) -> None:
-    """Executes UI generator scripts to keep visualizers synchronized with latest data."""
-    print("\n🔄 Updating Visualizers & Dashboards...")
-    python_bin = BASE_DIR / "venv" / "bin" / "python3"
-    if not python_bin.exists():
-        python_bin = "python3"
-    else:
-        python_bin = str(python_bin)
-
-    if update_dashboard:
-        try:
-            subprocess.run([python_bin, str(V4_DIR / "generate_dashboard_v4.py")], cwd=str(BASE_DIR), check=True)
-        except Exception as e:
-            print(f"   [!] Dashboard update notice: {e}")
-
-    if update_fog_map:
-        try:
-            pipeline_map_gen = PIPELINE_DIR / "generate_pipeline_fog_map.py"
-            target_map_gen = str(pipeline_map_gen) if pipeline_map_gen.exists() else str(V4_DIR / "generate_fog_map_v4.py")
-            subprocess.run([python_bin, target_map_gen], cwd=str(BASE_DIR), check=True)
-        except Exception as e:
-            print(f"   [!] Fog Map update notice: {e}")
-
-    if update_crm:
-        try:
-            pipeline_crm_gen = PIPELINE_DIR / "generate_pipeline_crm_dashboard.py"
-            target_crm_gen = str(pipeline_crm_gen) if pipeline_crm_gen.exists() else str(V4_DIR / "generate_crm_dashboard.py")
-            subprocess.run([python_bin, target_crm_gen], cwd=str(BASE_DIR), check=True)
-        except Exception as e:
-            print(f"   [!] CRM Dashboard update notice: {e}")
+    """Deprecated: crm_server.py renders all visualizers dynamically in real-time from JSON files."""
+    pass
