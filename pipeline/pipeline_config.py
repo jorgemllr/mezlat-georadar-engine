@@ -17,13 +17,25 @@ from dotenv import load_dotenv
 # ── Paths ─────────────────────────────────────────────────────────────────────
 PIPELINE_DIR = Path(__file__).resolve().parent
 V4_DIR = PIPELINE_DIR.parent
-BASE_DIR = V4_DIR.parent.parent
-DATASETS_DIR = BASE_DIR / "Datasets"
 
-CLUSTERS_FILE = V4_DIR / "commercial_clusters_v4.json"
-ALLOCATION_FILE = V4_DIR / "api_budget_allocation_v4.json"
-BUDGET_FILE = V4_DIR / "budget_state.json"
-BNAI_FILE = V4_DIR / "bnai_niches.json"
+# Detect if running in standalone georadar repo or inside MESLATT monorepo
+if (V4_DIR / "commercial_clusters_v4.json").exists():
+    REPO_ROOT = V4_DIR
+elif (PIPELINE_DIR.parent / "Datasets").exists():
+    REPO_ROOT = PIPELINE_DIR.parent
+elif (PIPELINE_DIR.parent.parent / "Datasets").exists():
+    REPO_ROOT = PIPELINE_DIR.parent.parent
+else:
+    REPO_ROOT = V4_DIR.parent.parent  # Default monorepo fallback
+
+BASE_DIR = REPO_ROOT
+DATASETS_DIR = REPO_ROOT / "Datasets" if (REPO_ROOT / "Datasets").exists() else (REPO_ROOT.parent.parent / "Datasets")
+
+# Fallback search for config and cluster files
+CLUSTERS_FILE = V4_DIR / "commercial_clusters_v4.json" if (V4_DIR / "commercial_clusters_v4.json").exists() else (REPO_ROOT / "commercial_clusters_v4.json")
+ALLOCATION_FILE = V4_DIR / "api_budget_allocation_v4.json" if (V4_DIR / "api_budget_allocation_v4.json").exists() else (REPO_ROOT / "api_budget_allocation_v4.json")
+BUDGET_FILE = V4_DIR / "budget_state.json" if (V4_DIR / "budget_state.json").exists() else (REPO_ROOT / "budget_state.json")
+BNAI_FILE = V4_DIR / "bnai_niches.json" if (V4_DIR / "bnai_niches.json").exists() else (REPO_ROOT / "bnai_niches.json")
 
 PROCESSED_LEADS_FILE = DATASETS_DIR / "processed_leads_v4.json"
 SCANNED_PROBES_FILE = DATASETS_DIR / "scanned_probes_v4.json"
@@ -34,7 +46,8 @@ CRM_HTML = V4_DIR / "crm_pipeline_v4.html"
 ALLOCATION_DASHBOARD_HTML = V4_DIR / "allocation_dashboard_v4.html"
 
 # ── API Setup ─────────────────────────────────────────────────────────────────
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(REPO_ROOT / ".env")
+load_dotenv(REPO_ROOT.parent.parent / ".env" if (REPO_ROOT.parent.parent / ".env").exists() else REPO_ROOT / ".env")
 API_KEY = os.getenv("GOOGLE_PLACES_API_KEY") or os.getenv("GOOGLE_MAPS_API_KEY")
 
 if not API_KEY:

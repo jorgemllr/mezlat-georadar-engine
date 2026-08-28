@@ -8,18 +8,19 @@ Reads real budget state from Datasets/budget_state.json (5,000 calls ceiling).
 Includes direct Google Maps deep links, coordinates, and address metadata.
 """
 
-import json
+import sys
 from pathlib import Path
 from collections import defaultdict
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
-DATASETS_DIR = BASE_DIR / "Datasets"
-V4_DIR = BASE_DIR / "scripts" / "allocation_v4"
-PIPELINE_DIR = V4_DIR / "pipeline"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from pipeline_config import (
+    PROCESSED_LEADS_FILE as LEADS_FILE,
+    ARCHETYPE_FILE if 'ARCHETYPE_FILE' in locals() else (Path(__file__).resolve().parent.parent / "archetype_mapping.json" if (Path(__file__).resolve().parent.parent / "archetype_mapping.json").exists() else Path(__file__).resolve().parent.parent.parent.parent / "scripts" / "allocation_v4" / "archetype_mapping.json"),
+    BUDGET_FILE,
+    DATASETS_DIR
+)
 
-LEADS_FILE = DATASETS_DIR / "processed_leads_v4.json"
-ARCHETYPE_FILE = V4_DIR / "archetype_mapping.json"
-BUDGET_FILE = V4_DIR / "budget_state.json"
+ARCHETYPE_FILE = Path(__file__).resolve().parent.parent / "archetype_mapping.json" if (Path(__file__).resolve().parent.parent / "archetype_mapping.json").exists() else Path(__file__).resolve().parent.parent.parent.parent / "scripts" / "allocation_v4" / "archetype_mapping.json"
 OUTPUT_QUEUE_FILE = DATASETS_DIR / "phase2_round_robin_queue.json"
 
 DEFAULT_PHASE2_BUDGET_LIMIT = 5000  # Default 5,000 calls ($100 USD Google Cloud credits)

@@ -27,6 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pipeline_config import (
     API_KEY,
     MAX_PHOTOS_TO_EXTRACT,
+    DATASETS_DIR,
     load_budget,
     save_budget,
     check_and_deduct_budget,
@@ -180,7 +181,7 @@ def run_cli():
         target_leads = pending_hot_leads[:remaining_p2]
 
     elif mode == "4":
-        queue_file = Path(__file__).resolve().parent.parent.parent.parent / "Datasets" / "phase2_round_robin_queue.json"
+        queue_file = DATASETS_DIR / "phase2_round_robin_queue.json"
         if not queue_file.exists():
             print("⚠️ Queue file not found. Generating fresh Round-Robin queue...")
             try:

@@ -24,8 +24,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Paths
-const BASE_DIR = path.resolve(__dirname, '../../../../');
-const LEADS_FILE = path.join(BASE_DIR, 'Datasets', 'processed_leads_v4.json');
+const SCRIPT_DIR = __dirname;
+const REPO_ROOT = path.resolve(__dirname, '../../');
+const MONOREPO_ROOT = path.resolve(__dirname, '../../../../');
+
+let LEADS_FILE = path.join(REPO_ROOT, 'Datasets', 'processed_leads_v4.json');
+if (!fs.existsSync(LEADS_FILE)) {
+    LEADS_FILE = path.join(MONOREPO_ROOT, 'Datasets', 'processed_leads_v4.json');
+}
 const AUTH_DIR = path.join(__dirname, 'auth_session');
 
 // Configuration
