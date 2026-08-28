@@ -1,5 +1,5 @@
 """
-MESLATT — MCDA Budget Allocator V4 (Mexico-First, Dynamic Budget)
+MEZLAT — MCDA Budget Allocator V4 (Mexico-First, Dynamic Budget)
 =================================================================
 
 Key improvements over V3:
@@ -319,7 +319,7 @@ def assign_tiers(cities: list) -> list:
 # ── Main routine ──────────────────────────────────────────────────────────────
 
 def run_mcda_v4_allocation():
-    print("🚀 MESLATT — MCDA Budget Allocator V4 (Mexico-First, Dynamic Budget)")
+    print("🚀 MEZLAT — MCDA Budget Allocator V4 (Mexico-First, Dynamic Budget)")
     V4_DIR.mkdir(parents=True, exist_ok=True)
 
     # ── 1. Load live budget state ─────────────────────────────────────────────

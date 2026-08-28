@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MESLATT PIPELINE V4 — STEP 05: WHATSAPP BATCH VERIFIER (ORCHESTRATOR)
+MEZLAT PIPELINE V4 — STEP 05: WHATSAPP BATCH VERIFIER (ORCHESTRATOR)
 ====================================================================
 Orchestrates the Node.js Baileys headless verifier (Method A).
 Checks and updates `has_whatsapp: True | False` in processed_leads_v4.json.
@@ -38,7 +38,7 @@ def run_verifier():
 
 if __name__ == "__main__":
     print("============================================================")
-    print("   MESLATT PIPELINE V4 — 05 WHATSAPP PRESENCE VERIFIER      ")
+    print("   MEZLAT PIPELINE V4 — 05 WHATSAPP PRESENCE VERIFIER      ")
     print("============================================================")
     print("⚠️  Security Note: Ensure you pair using a dedicated business/secondary SIM.\n")
     

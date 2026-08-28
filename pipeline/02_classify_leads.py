@@ -1,5 +1,5 @@
 """
-MESLATT Allocation V4 Pipeline — Lead Classifier & BNAI Scoring Engine
+MEZLAT Allocation V4 Pipeline — Lead Classifier & BNAI Scoring Engine
 ======================================================================
 Applies multi-strategy intelligence filters to classify raw business prospects
 into 3 Commercial Target Tiers:
@@ -141,7 +141,7 @@ def classify_lead_commercial_tiers(lead: dict, bnai_score: float) -> None:
 
 def run_cli():
     print("=" * 60)
-    print("   MESLATT COMMERCIAL PIPELINE V4 — LEAD CLASSIFIER")
+    print("   MEZLAT COMMERCIAL PIPELINE V4 — LEAD CLASSIFIER")
     print("=" * 60)
     print("🤖 Automatic Classification Mode: Active")
     print("Categorizing into TIER 1 (Starter), TIER 2 (Growth), TIER 3 (Enterprise).")

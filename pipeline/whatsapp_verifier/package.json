@@ -1,7 +1,7 @@
 {
-  "name": "meslatt-whatsapp-verifier",
+  "name": "mezlat-whatsapp-verifier",
   "version": "1.0.0",
-  "description": "Headless batch WhatsApp existence validator for MESLATT Pipeline V4",
+  "description": "Headless batch WhatsApp existence validator for MEZLAT Pipeline V4",
   "main": "verify_leads.js",
   "type": "module",
   "scripts": {

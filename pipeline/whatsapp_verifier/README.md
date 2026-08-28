@@ -1,4 +1,4 @@
-# MESLATT Pipeline V4 — Headless WhatsApp Verifier (Method A)
+# MEZLAT Pipeline V4 — Headless WhatsApp Verifier (Method A)
 
 ## 📌 Architecture Overview
 Uses `@whiskeysockets/baileys` to connect directly to the WhatsApp Multi-Device WebSocket protocol without needing Puppeteer or Chromium.

@@ -1,4 +1,4 @@
-# MESLATT Allocation V4 Pipeline (Decoupled Engine)
+# MEZLAT Allocation V4 Pipeline (Decoupled Engine)
 
 The `pipeline/` module provides a decoupled, resilient, and interactive command-line interface (CLI) for territory data extraction, intelligent lead classification, deep enrichment, and interactive visualization.
 

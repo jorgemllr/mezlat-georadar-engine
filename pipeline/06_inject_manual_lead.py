@@ -1,5 +1,5 @@
 """
-MESLATT V4 Pipeline — Manual Lead Injector (Ambassadors / Hidden Gems)
+MEZLAT V4 Pipeline — Manual Lead Injector (Ambassadors / Hidden Gems)
 ======================================================================
 Allows a sales ambassador to paste a Google Maps Place ID or URL.
 Extracts the full Place Details from Google API and injects it into the
@@ -43,7 +43,7 @@ def fetch_place_details(place_id: str) -> dict:
 
 def run_cli():
     print("=" * 60)
-    print("   MESLATT PIPELINE V4 — MANUAL LEAD INJECTOR (AMBASSADORS)")
+    print("   MEZLAT PIPELINE V4 — MANUAL LEAD INJECTOR (AMBASSADORS)")
     print("=" * 60)
     print("Use this to manually add 'Hidden Gems' (businesses not caught by the radar).")
     

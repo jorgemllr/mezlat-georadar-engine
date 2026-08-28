@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MESLATT PIPELINE V4 — 06 ROUND-ROBIN QUEUE & API BUDGET PLANNER
+MEZLAT PIPELINE V4 — 06 ROUND-ROBIN QUEUE & API BUDGET PLANNER
 ===============================================================
 Groups hot leads across granular Google categories, prioritizes them by
 Master Archetype BNAI score, and schedules balanced extraction rounds.
@@ -41,7 +41,7 @@ def load_budget_limits():
 
 def build_round_robin_queue(safety_reserve: int = SAFETY_RESERVE_CALLS):
     print("============================================================")
-    print("   MESLATT V4 — ROUND-ROBIN QUEUE & API BUDGET PLANNER     ")
+    print("   MEZLAT V4 — ROUND-ROBIN QUEUE & API BUDGET PLANNER     ")
     print("============================================================")
     
     if not LEADS_FILE.exists():

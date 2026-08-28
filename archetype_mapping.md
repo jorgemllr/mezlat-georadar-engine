@@ -1,4 +1,4 @@
-# MESLATT // Master Archetype Taxonomy & Distribution Matrix
+# MEZLAT // Master Archetype Taxonomy & Distribution Matrix
 
 > **Status:** Production Architecture V4  
 > **Total Database Leads:** `5,213` prospects  

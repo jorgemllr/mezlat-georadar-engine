@@ -1,5 +1,5 @@
 /**
- * MESLATT PIPELINE V4 — HEADLESS WHATSAPP BATCH VERIFIER (METHOD A)
+ * MEZLAT PIPELINE V4 — HEADLESS WHATSAPP BATCH VERIFIER (METHOD A)
  * =================================================================
  * Connects directly to WhatsApp WebSocket protocol via Baileys.
  * Checks whether prospect phone numbers are active WhatsApp accounts
@@ -72,7 +72,7 @@ function normalizeMexicanPhone(phoneRaw) {
 
 async function startVerifier() {
     console.log('============================================================');
-    console.log('   MESLATT V4 — HEADLESS WHATSAPP BATCH VERIFIER (METHOD A) ');
+    console.log('   MEZLAT V4 — HEADLESS WHATSAPP BATCH VERIFIER (METHOD A) ');
     console.log('============================================================\n');
 
     if (!fs.existsSync(LEADS_FILE)) {

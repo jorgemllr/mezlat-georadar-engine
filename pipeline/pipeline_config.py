@@ -1,5 +1,5 @@
 """
-MESLATT Allocation V4 Pipeline — Shared Configuration & Core Utilities
+MEZLAT Allocation V4 Pipeline — Shared Configuration & Core Utilities
 ======================================================================
 Central configuration module for paths, API credentials, budget state,
 batch definitions, and UI generation hooks.
@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 PIPELINE_DIR = Path(__file__).resolve().parent
 V4_DIR = PIPELINE_DIR.parent
 
-# Detect if running in standalone georadar repo or inside MESLATT monorepo
+# Detect if running in standalone georadar repo or inside MEZLAT monorepo
 if (V4_DIR / "commercial_clusters_v4.json").exists():
     REPO_ROOT = V4_DIR
 elif (PIPELINE_DIR.parent / "Datasets").exists():

@@ -1,5 +1,5 @@
 """
-MESLATT Allocation V4 Pipeline — CRM Dashboard Generator
+MEZLAT Allocation V4 Pipeline — CRM Dashboard Generator
 ========================================================
 Generates a virtualized HTML CRM interface showing ALL leads.
 """
@@ -30,7 +30,7 @@ def generate_crm():
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MESLATT // Sales Pipeline CRM</title>
+    <title>MEZLAT // Sales Pipeline CRM</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
@@ -100,7 +100,7 @@ def generate_crm():
 <body>
     <div class="topbar">
         <div class="topbar-hex"></div>
-        <div class="topbar-title">MESLATT <span>CRM // PIPELINE V4</span></div>
+        <div class="topbar-title">MEZLAT <span>CRM // PIPELINE V4</span></div>
     </div>
 
     <!-- FILTERS -->

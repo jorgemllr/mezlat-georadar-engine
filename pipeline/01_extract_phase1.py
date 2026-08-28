@@ -1,5 +1,5 @@
 """
-MESLATT Allocation V4 Pipeline — Phase 1 Raw Leads Extractor
+MEZLAT Allocation V4 Pipeline — Phase 1 Raw Leads Extractor
 ============================================================
 Executes Google Places API (New) Nearby Search calls for commercial radar probes.
 Supports 3 operational modes via interactive CLI:
@@ -183,7 +183,7 @@ def extract_probe(
 
 def run_cli():
     print("=" * 60)
-    print("   MESLATT PIPELINE V4 — PHASE 1 RAW LEADS EXTRACTOR")
+    print("   MEZLAT PIPELINE V4 — PHASE 1 RAW LEADS EXTRACTOR")
     print("=" * 60)
     
     budget = load_budget()

@@ -1,5 +1,5 @@
 """
-MESLATT Allocation V4 Pipeline — Phase 2 Deep Enrichment Engine
+MEZLAT Allocation V4 Pipeline — Phase 2 Deep Enrichment Engine
 ===============================================================
 Enriches Qualified Hot Leads with Google Places (New) Place Details:
   - Up to 3 Google CDN High-Definition Photos (Static redirect URLs)
@@ -102,7 +102,7 @@ def enrich_single_lead(lead: dict, budget: dict) -> bool:
 
 def run_cli():
     print("=" * 60)
-    print("   MESLATT PIPELINE V4 — PHASE 2 DEEP ENRICHMENT")
+    print("   MEZLAT PIPELINE V4 — PHASE 2 DEEP ENRICHMENT")
     print("=" * 60)
 
     budget = load_budget()

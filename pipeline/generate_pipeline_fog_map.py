@@ -1,5 +1,5 @@
 """
-MESLATT Allocation V4 Pipeline — Fog of War Tactical Map Generator
+MEZLAT Allocation V4 Pipeline — Fog of War Tactical Map Generator
 ===================================================================
 Generates fog_of_war_map_v4.html with interactive multi-parameter controls:
   - Lead Status Selector (All Leads / Hot Leads / Phase 2 Enriched / Standard)
@@ -67,7 +67,7 @@ def generate_fog_map_html():
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>MESLATT V4 - Tactical Fog of War & Lead Inspector</title>
+    <title>MEZLAT V4 - Tactical Fog of War & Lead Inspector</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -308,7 +308,7 @@ def generate_fog_map_html():
         <div class="sp-header">
             <div class="sp-brand">
                 <div class="sp-hex"></div>
-                <div class="sp-title">MESLATT <span>OS</span></div>
+                <div class="sp-title">MEZLAT <span>OS</span></div>
             </div>
             <div class="sp-sub">Tactical Intelligence Grid</div>
         </div>

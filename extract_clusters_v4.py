@@ -1,5 +1,5 @@
 """
-MESLATT — Commercial Cluster & Probe Extractor V4
+MEZLAT — Commercial Cluster & Probe Extractor V4
 ==================================================
 
 Reads `api_budget_allocation_v4.json` (output of Step 1) and determines the
@@ -485,7 +485,7 @@ def extract_denue_clusters(city_name: str, lat: float, lng: float,
 # ── Main routine ──────────────────────────────────────────────────────────────
 
 def run_cluster_extraction_v4():
-    print("🚀 MESLATT — Cluster & Probe Extractor V4 (Mexico-First, DENUE-Driven)")
+    print("🚀 MEZLAT — Cluster & Probe Extractor V4 (Mexico-First, DENUE-Driven)")
     V4_DIR.mkdir(parents=True, exist_ok=True)
 
     if not ALLOCATION_V4_FILE.exists():
