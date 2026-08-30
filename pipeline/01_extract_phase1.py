@@ -12,6 +12,7 @@ Saves raw leads to Datasets/processed_leads_v4.json and checkpoints scanned prob
 
 import os
 import sys
+import time
 import json
 import math
 import requests
@@ -36,8 +37,12 @@ from pipeline_config import (
     trigger_ui_updates
 )
 
-def search_nearby_places(lat: float, lng: float, radius: int, types_list: list) -> list:
-    """Performs Google Places searchNearby API request."""
+def search_nearby_places(lat: float, lng: float, radius: int, types_list: list, max_retries: int = 3) -> tuple[list, bool]:
+    """
+    Performs Google Places searchNearby API request with automatic retry and exponential backoff
+    to handle transient SSL drops, socket timeouts, and rate limits gracefully.
+    Returns: (places_list, success_boolean)
+    """
     url = "https://places.googleapis.com/v1/places:searchNearby"
     headers = {
         "Content-Type": "application/json",
@@ -62,15 +67,30 @@ def search_nearby_places(lat: float, lng: float, radius: int, types_list: list) 
             "circle": {"center": {"latitude": lat, "longitude": lng}, "radius": radius}
         }
     }
-    try:
-        response = requests.post(url, headers=headers, json=payload, timeout=12)
-        if response.status_code == 200:
-            return response.json().get("places", [])
-        else:
-            print(f"   ❌ API returned status {response.status_code}: {response.text[:200]}")
-    except Exception as e:
-        print(f"   ❌ Request failed: {e}")
-    return []
+
+    session = requests.Session()
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = session.post(url, headers=headers, json=payload, timeout=15)
+            if response.status_code == 200:
+                return response.json().get("places", []), True
+            elif response.status_code in [429, 500, 502, 503, 504]:
+                wait_time = attempt * 1.5
+                print(f" (⚠️ Status {response.status_code}, retry {attempt}/{max_retries} in {wait_time}s)...", end="", flush=True)
+                time.sleep(wait_time)
+            else:
+                print(f" ❌ API returned status {response.status_code}: {response.text[:120]}", end="", flush=True)
+                return [], False
+        except (requests.exceptions.SSLError, requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            wait_time = attempt * 1.5
+            print(f" (⚠️ Network/SSL issue, retry {attempt}/{max_retries} in {wait_time}s)...", end="", flush=True)
+            time.sleep(wait_time)
+            session = requests.Session()  # Renew session on SSL drop
+        except Exception as e:
+            print(f" ❌ Unhandled error: {e}", end="", flush=True)
+            return [], False
+
+    return [], False
 
 def extract_probe(
     city_name: str,
@@ -118,66 +138,70 @@ def extract_probe(
             return new_prospects_found, True  # Budget exceeded
 
         print(f"   📡 Executing Batch {batch_idx} ({len(BATCH_NICHES[batch_idx])} niche types)...", end="", flush=True)
-        places = search_nearby_places(lat, lng, dynamic_radius, BATCH_NICHES[batch_idx])
-        print(f" ✅ {len(places)} raw results found.")
+        places, success = search_nearby_places(lat, lng, dynamic_radius, BATCH_NICHES[batch_idx])
+        
+        if success:
+            print(f" ✅ {len(places)} raw results found.")
+            for p in places:
+                place_id = p.get("id")
+                if not place_id:
+                    continue
 
-        for p in places:
-            place_id = p.get("id")
-            if not place_id:
-                continue
+                status = p.get("businessStatus", "OPERATIONAL")
+                if status in ["CLOSED_TEMPORARILY", "CLOSED_PERMANENTLY"]:
+                    continue
 
-            status = p.get("businessStatus", "OPERATIONAL")
-            if status in ["CLOSED_TEMPORARILY", "CLOSED_PERMANENTLY"]:
-                continue
+                if place_id not in all_leads:
+                    new_prospects_found += 1
+                    all_leads[place_id] = {
+                        "place_id": place_id,
+                        "business_name": p.get("displayName", {}).get("text", "Unknown"),
+                        "city_zone": city_name,
+                        "lat": p.get("location", {}).get("latitude", lat),
+                        "lng": p.get("location", {}).get("longitude", lng),
+                        "address": p.get("formattedAddress", ""),
+                        "rating": p.get("rating", 0),
+                        "reviews_count": p.get("userRatingCount", 0),
+                        "website": p.get("websiteUri", ""),
+                        "phone": p.get("nationalPhoneNumber") or p.get("internationalPhoneNumber", ""),
+                        "price_level": p.get("priceLevel", "UNKNOWN"),
+                        "opening_hours": p.get("regularOpeningHours", {}).get("weekdayDescriptions", []),
+                        "payment_options": p.get("paymentOptions", {}),
+                        "editorial_summary": p.get("editorialSummary", {}).get("text", ""),
+                        "reservable": p.get("reservable"),
+                        "delivery": p.get("delivery"),
+                        "primary_type": p.get("primaryType", "UNKNOWN"),
+                        "google_maps_url": p.get("googleMapsUri", f"https://maps.google.com/?cid={place_id}"),
+                        "photo_count": len(p.get("photos", [])),
+                        "batch_origin": batch_idx,
+                        "chatbot_context": {
+                            "allows_dogs": p.get("allowsDogs"),
+                            "good_for_children": p.get("goodForChildren"),
+                            "good_for_groups": p.get("goodForGroups"),
+                            "live_music": p.get("liveMusic"),
+                            "outdoor_seating": p.get("outdoorSeating"),
+                            "restroom": p.get("restroom"),
+                            "serves_alcohol": any([p.get("servesBeer"), p.get("servesWine"), p.get("servesCocktails")]),
+                            "serves_meals": any([p.get("servesBreakfast"), p.get("servesLunch"), p.get("servesDinner")]),
+                            "parking_options": p.get("parkingOptions", {})
+                        },
+                        "photos": [],
+                        "is_hot_lead": False,
+                        "hot_lead_tier": 0,
+                        "phase2_score": 0.0,
+                        "phase2_done": False
+                    }
 
-            if place_id not in all_leads:
-                new_prospects_found += 1
-                all_leads[place_id] = {
-                    "place_id": place_id,
-                    "business_name": p.get("displayName", {}).get("text", "Unknown"),
-                    "city_zone": city_name,
-                    "lat": p.get("location", {}).get("latitude", lat),
-                    "lng": p.get("location", {}).get("longitude", lng),
-                    "address": p.get("formattedAddress", ""),
-                    "rating": p.get("rating", 0),
-                    "reviews_count": p.get("userRatingCount", 0),
-                    "website": p.get("websiteUri", ""),
-                    "phone": p.get("nationalPhoneNumber") or p.get("internationalPhoneNumber", ""),
-                    "price_level": p.get("priceLevel", "UNKNOWN"),
-                    "opening_hours": p.get("regularOpeningHours", {}).get("weekdayDescriptions", []),
-                    "payment_options": p.get("paymentOptions", {}),
-                    "editorial_summary": p.get("editorialSummary", {}).get("text", ""),
-                    "reservable": p.get("reservable"),
-                    "delivery": p.get("delivery"),
-                    "primary_type": p.get("primaryType", "UNKNOWN"),
-                    "google_maps_url": p.get("googleMapsUri", f"https://maps.google.com/?cid={place_id}"),
-                    "photo_count": len(p.get("photos", [])),
-                    "batch_origin": batch_idx,
-                    "chatbot_context": {
-                        "allows_dogs": p.get("allowsDogs"),
-                        "good_for_children": p.get("goodForChildren"),
-                        "good_for_groups": p.get("goodForGroups"),
-                        "live_music": p.get("liveMusic"),
-                        "outdoor_seating": p.get("outdoorSeating"),
-                        "restroom": p.get("restroom"),
-                        "serves_alcohol": any([p.get("servesBeer"), p.get("servesWine"), p.get("servesCocktails")]),
-                        "serves_meals": any([p.get("servesBreakfast"), p.get("servesLunch"), p.get("servesDinner")]),
-                        "parking_options": p.get("parkingOptions", {})
-                    },
-                    "photos": [],
-                    "is_hot_lead": False,
-                    "hot_lead_tier": 0,
-                    "phase2_score": 0.0,
-                    "phase2_done": False
-                }
+            # Only record batch as completed if the request actually succeeded
+            completed_batches.add(batch_idx)
+            scanned_state[probe_id] = completed_batches
 
-        completed_batches.add(batch_idx)
-        scanned_state[probe_id] = completed_batches
-
-        # Incremental state persist after each batch
-        save_budget(budget)
-        save_processed_leads(all_leads)
-        save_scanned_state(scanned_state)
+            # Incremental state persist after each successful batch
+            save_budget(budget)
+            save_processed_leads(all_leads)
+            save_scanned_state(scanned_state)
+        else:
+            print(" ⚠️ Batch failed after retries. Sonda batch left pending for next run.")
 
     return new_prospects_found, False
 
