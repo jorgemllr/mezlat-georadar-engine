@@ -152,33 +152,44 @@ def run_cli():
         return
 
     bnai_matrix = load_bnai_matrix()
-    
-    print(f"⚙️ Applying commercial tiers across {len(all_leads)} prospects...")
+
+    total = len(all_leads)
+    print(f"⚙️ Applying commercial tiers across {total} prospects...")
 
     hot_count = 0
     t3_count = 0
     t2_count = 0
     t1_count = 0
 
-    for pid, lead in all_leads.items():
-        p_type = lead.get("primary_type", "")
-        bnai_score = bnai_matrix.get(p_type, 100.0)
-        
-        classify_lead_commercial_tiers(lead, bnai_score)
+    # Process leads in chunks to avoid OOM kills on VMs with limited RAM (55k+ leads)
+    CHUNK_SIZE = 5000
+    lead_items = list(all_leads.items())
 
-        if lead.get("is_hot_lead"):
-            hot_count += 1
-            t = lead.get("target_tier")
-            if t == 3: t3_count += 1
-            elif t == 2: t2_count += 1
-            else: t1_count += 1
+    for chunk_start in range(0, total, CHUNK_SIZE):
+        chunk = lead_items[chunk_start:chunk_start + CHUNK_SIZE]
+        chunk_end = min(chunk_start + CHUNK_SIZE, total)
+        print(f"   🔄 Processing leads {chunk_start + 1}–{chunk_end} of {total}...", flush=True)
 
-    save_processed_leads(all_leads)
+        for pid, lead in chunk:
+            p_type = lead.get("primary_type", "")
+            bnai_score = bnai_matrix.get(p_type, 100.0)
+            classify_lead_commercial_tiers(lead, bnai_score)
+
+            if lead.get("is_hot_lead"):
+                hot_count += 1
+                t = lead.get("target_tier")
+                if t == 3: t3_count += 1
+                elif t == 2: t2_count += 1
+                else: t1_count += 1
+
+        # Save incrementally after each chunk to protect against future OOM kills
+        save_processed_leads(all_leads)
+        print(f"   ✅ Chunk saved. Hot leads so far: {hot_count}", flush=True)
 
     print("\n" + "=" * 45)
     print("🎯 CLASSIFICATION RESULTS SUMMARY")
     print("=" * 45)
-    print(f"  Total Qualified Hot Leads: {hot_count} / {len(all_leads)}")
+    print(f"  Total Qualified Hot Leads: {hot_count} / {total}")
     print(f"  ├─ TIER 3 (Enterprise VIP): {t3_count}")
     print(f"  ├─ TIER 2 (Growth):         {t2_count}")
     print(f"  └─ TIER 1 (Starter):        {t1_count}")

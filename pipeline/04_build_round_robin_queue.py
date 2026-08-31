@@ -15,12 +15,19 @@ from collections import defaultdict
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pipeline_config import (
     PROCESSED_LEADS_FILE as LEADS_FILE,
-    ARCHETYPE_FILE if 'ARCHETYPE_FILE' in locals() else (Path(__file__).resolve().parent.parent / "archetype_mapping.json" if (Path(__file__).resolve().parent.parent / "archetype_mapping.json").exists() else Path(__file__).resolve().parent.parent.parent.parent / "scripts" / "allocation_v4" / "archetype_mapping.json"),
     BUDGET_FILE,
     DATASETS_DIR
 )
 
-ARCHETYPE_FILE = Path(__file__).resolve().parent.parent / "archetype_mapping.json" if (Path(__file__).resolve().parent.parent / "archetype_mapping.json").exists() else Path(__file__).resolve().parent.parent.parent.parent / "scripts" / "allocation_v4" / "archetype_mapping.json"
+# Resolve ARCHETYPE_FILE: prefer repo root, fall back to monorepo location
+_repo_root = Path(__file__).resolve().parent.parent
+_mono_root = Path(__file__).resolve().parent.parent.parent.parent / "scripts" / "allocation_v4"
+ARCHETYPE_FILE = (
+    _repo_root / "archetype_mapping.json"
+    if (_repo_root / "archetype_mapping.json").exists()
+    else _mono_root / "archetype_mapping.json"
+)
+
 OUTPUT_QUEUE_FILE = DATASETS_DIR / "phase2_round_robin_queue.json"
 
 DEFAULT_PHASE2_BUDGET_LIMIT = 5000  # Default 5,000 calls ($100 USD Google Cloud credits)
